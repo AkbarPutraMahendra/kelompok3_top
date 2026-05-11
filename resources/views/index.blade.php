@@ -3,98 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TopUp All Game</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>K3 STORE | Pusat Topup Game Terpercaya</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .navbar { background-color: #1a1a2e; }
-        .hero { background: linear-gradient(135deg, #16213e 0%, #0f3460 100%); color: white; padding: 80px 0; border-bottom-left-radius: 50px; border-bottom-right-radius: 50px; }
-        .game-card { border: none; border-radius: 15px; transition: transform 0.3s; overflow: hidden; }
-        .game-card:hover { transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .game-card img { height: 180px; object-fit: cover; }
-        .category-title { border-left: 5px solid #e94560; padding-left: 15px; margin-bottom: 30px; }
+        .bg-dark-primary { background-color: #121212; }
+        .bg-dark-secondary { background-color: #1f1f1f; }
+        .text-gold { color: #fbbf24; }
+        .bg-gold { background-color: #fbbf24; }
+        
+        .game-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .game-card:hover {
+            transform: translateY(-8px);
+            border-color: #fbbf24;
+            box-shadow: 0 10px 25px rgba(251, 191, 36, 0.15);
+        }
+
+        /* Hover Effect untuk Logo */
+        .logo-home:hover .logo-icon {
+            transform: rotate(15deg) scale(1.1);
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+        }
     </style>
 </head>
-<body>
+<body class="bg-dark-primary text-white font-sans antialiased">
 
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="/"><i class="fas fa-bolt text-warning me-2"></i>TOPUP-TOP</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/cek-transaksi">Cek Pesanan</a></li>
-                </ul>
+    <nav class="bg-dark-secondary py-4 px-6 flex justify-between items-center border-b border-gray-800 sticky top-0 z-50">
+        <div class="flex items-center gap-10">
+            <a href="{{ route('home') }}" class="logo-home flex items-center gap-2 group transition-all">
+                <div class="logo-icon bg-gold p-2 rounded-lg shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all duration-300">
+                    <i class="fa fa-bolt text-black text-xl"></i>
+                </div>
+                <h1 class="text-xl font-black tracking-tighter uppercase italic group-hover:text-gold transition-colors">
+                    K3<span class="text-gold group-hover:text-white transition-colors">STORE</span>
+                </h1>
+            </a>
+            
+            <div class="flex gap-8 text-[10px] font-black tracking-[0.2em]">
+                <a href="{{ route('home') }}" class="text-gray-400 hover:text-gold transition-all flex items-center gap-2">
+                    <i class="fa fa-gamepad"></i> TOPUP
+                </a>
+                <a href="/cek-transaksi" class="text-gray-400 hover:text-gold transition-all flex items-center gap-2">
+                    <i class="fa fa-search"></i> LACAK PESANAN
+                </a>
             </div>
+        </div>
+
+        <div class="hidden md:flex items-center gap-2 text-[10px] font-bold text-green-500 uppercase tracking-widest bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
+            <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+            Sistem Online
         </div>
     </nav>
 
-    <header class="hero text-center">
-        <div class="container">
-            <h1 class="display-4 fw-bold mb-3">Top Up Game Tercepat</h1>
-            <p class="lead">Proses otomatis 24 jam dengan berbagai metode pembayaran aman.</p>
+    <header class="container mx-auto px-4 py-10">
+        <div class="relative overflow-hidden bg-gradient-to-br from-yellow-900/20 to-transparent p-10 md:p-14 rounded-[2rem] border border-gray-800 shadow-2xl">
+            <div class="relative z-10">
+                <h2 class="text-4xl md:text-5xl font-black mb-3 uppercase italic tracking-tighter">
+                    Layanan <span class="text-gold italic">Top Up</span> Terbaik
+                </h2>
+                <p class="text-gray-400 text-base max-w-lg leading-relaxed mb-6">
+                    Proses instan tanpa ribet. Cukup klik logo <span class="text-gold font-bold">K3 STORE</span> untuk kembali ke katalog utama kapan saja.
+                </p>
+                <div class="flex items-center gap-6 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                    <div class="flex items-center gap-2">
+                        <i class="fa fa-clock text-gold"></i> Fast Response
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa fa-shield-halved text-gold"></i> Secure Payment
+                    </div>
+                </div>
+            </div>
+            <div class="absolute -right-20 -top-20 w-80 h-80 bg-gold/10 rounded-full blur-[100px]"></div>
         </div>
     </header>
 
-    <main class="container my-5">
-        <h3 class="category-title fw-bold">Pilih Game Populer</h3>
-        
-        <div class="row g-4">
-            <div class="col-6 col-md-4 col-lg-3">
-                <a href="/topup/mobile-legends" class="text-decoration-none text-dark">
-                    <div class="card game-card h-100 shadow-sm text-center">
-                        <img src="https://via.placeholder.com/300x400?text=Mobile+Legends" class="card-img-top" alt="MLBB">
-                        <div class="card-body">
-                            <h6 class="card-title fw-bold">Mobile Legends</h6>
-                            <p class="text-muted small">Moonton</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="card game-card h-100 shadow-sm text-center">
-                    <img src="https://via.placeholder.com/300x400?text=Free+Fire" class="card-img-top" alt="FF">
-                    <div class="card-body">
-                        <h6 class="card-title fw-bold">Free Fire</h6>
-                        <p class="text-muted small">Garena</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="card game-card h-100 shadow-sm text-center">
-                    <img src="https://via.placeholder.com/300x400?text=Valorant" class="card-img-top" alt="VAL">
-                    <div class="card-body">
-                        <h6 class="card-title fw-bold">Valorant</h6>
-                        <p class="text-muted small">Riot Games</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="card game-card h-100 shadow-sm text-center">
-                    <img src="https://via.placeholder.com/300x400?text=Genshin+Impact" class="card-img-top" alt="GI">
-                    <div class="card-body">
-                        <h6 class="card-title fw-bold">Genshin Impact</h6>
-                        <p class="text-muted small">HoYoverse</p>
-                    </div>
-                </div>
-            </div>
+    <section class="container mx-auto px-4 pb-24">
+        <div class="flex items-center gap-4 mb-10">
+            <h3 class="text-xl font-black uppercase tracking-[0.2em]">Katalog Game</h3>
+            <div class="h-[2px] bg-gradient-to-r from-gold/50 to-transparent flex-grow"></div>
         </div>
-    </main>
 
-    <footer class="bg-dark text-white text-center py-4 mt-5">
-        <div class="container">
-            <p class="mb-0">&copy; 2026 Kelompok 3 - Software Engineering Project</p>
-            <small class="text-muted">Dibuat dengan Laravel & Laragon</small>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            @foreach($allGames as $game)
+            <a href="{{ route('topup.detail', $game->id_game) }}" class="game-card bg-dark-secondary border border-gray-800 rounded-3xl overflow-hidden shadow-lg block group">
+                <div class="relative aspect-[3/4]">
+                    <img src="{{ asset('images/' . $game->id_game . '.png') }}" 
+                         alt="{{ $game->nama_game }}" 
+                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                    
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80 transition-opacity group-hover:opacity-90"></div>
+                    
+                    <div class="absolute bottom-0 left-0 right-0 p-6 text-center">
+                        <p class="font-black text-sm uppercase tracking-wider group-hover:text-gold transition-colors">{{ $game->nama_game }}</p>
+                        <div class="w-8 h-1 bg-gold mx-auto mt-2 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                    </div>
+                </div>
+            </a>
+            @endforeach
+        </div>
+    </section>
+
+    <footer class="bg-dark-secondary py-12 border-t border-gray-800">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-600 text-[10px] font-bold tracking-[0.3em] uppercase">
+                &copy; 2026 KELOMPOK 3 ADVERTISING PROJECT
+            </p>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

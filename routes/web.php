@@ -3,19 +3,23 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TransaksiController;
 
-// Halaman Utama (Landing Page)
-Route::get('/', function () {
-    return view('index');
-});
+/*
+|--------------------------------------------------------------------------
+| Web Routes - Kelompok 3 Store Project
+|--------------------------------------------------------------------------
+*/
 
-// Halaman Form Top Up (Dinamis mengambil data dari database)
-// URL: http://127.0.0.1:8000/topup
-Route::get('/topup', [TransaksiController::class, 'index'])->name('topup.index');
+// 1. Laman Utama (Katalog Semua Game)
+// Menampilkan semua daftar game yang ada di database
+Route::get('/', [TransaksiController::class, 'index'])->name('home');
 
-// Proses Simpan Data dari Form ke Database
+// 2. Laman Detail Top Up (Spesifik per Game)
+// Contoh URL: http://127.0.0.1:8000/topup/1
+Route::get('/topup/{id}', [TransaksiController::class, 'show'])->name('topup.detail');
+
+// 3. Proses Simpan Data (Action dari Form)
 Route::post('/topup/store', [TransaksiController::class, 'store'])->name('topup.store');
 
-// Halaman Cek Transaksi
-Route::get('/cek-transaksi', function () {
-    return view('cek-transaksi');
-});
+// 4. Halaman Cek Transaksi (Fitur Tracking)
+// Nantinya ini akan memanggil fungsi search di Controller
+Route::get('/cek-transaksi', [TransaksiController::class, 'search'])->name('transaksi.search');

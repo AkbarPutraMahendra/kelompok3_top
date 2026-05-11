@@ -15,9 +15,10 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // 2. Tabel Transaksi (Inti dari Flowchart Anda)
+        // 2. Tabel Transaksi (Ditambahkan Nomor Transaksi untuk Tracking)
         Schema::create('transaksi', function (Blueprint $table) {
             $table->id('id_transaksi');
+            $table->string('no_transaksi')->unique(); // Kode unik pelacakan (Contoh: TRX-20260511-XXXXX)
             $table->unsignedBigInteger('id_customer');
             $table->dateTime('tanggal');
             $table->string('status')->default('Pending'); // Pending, Sukses, Gagal
