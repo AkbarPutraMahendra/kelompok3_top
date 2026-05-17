@@ -12,7 +12,6 @@ class TransaksiController extends Controller
 {
     /**
      * 1. LAMAN UTAMA (KATALOG GAME)
-     * Menampilkan semua game di landing page
      */
     public function index()
     {
@@ -22,16 +21,15 @@ class TransaksiController extends Controller
 
     /**
      * 2. LAMAN DETAIL (FORM TOPUP)
-     * Menampilkan form berdasarkan game yang diklik
      */
     public function show($id)
     {
-        $game = Game::findOrFail($id); // Mencari game berdasarkan ID, jika tidak ada muncul 404
+        $game = Game::findOrFail($id);
         return view('topup_form', compact('game'));
     }
 
     /**
-     * 3. PROSES SIMPAN DATA
+     * 3. PROSES SIMPAN DATA & REDIRECT KE NOTA
      */
     public function store(Request $request)
     {
@@ -39,40 +37,66 @@ class TransaksiController extends Controller
             'email' => 'required|email',
             'id_akun' => 'required',
             'id_game' => 'required|exists:games,id_game',
+            'nominal' => 'required',
+            'metode_pembayaran' => 'required',
         ]);
 
         try {
             DB::beginTransaction();
 
+            // Simpan data customer
             $customer = Customer::create([
-                'email' => $request->email,
+                'email'   => $request->email,
                 'id_akun' => $request->id_akun,
                 'id_game' => $request->id_game,
             ]);
 
+            // Buat No. Transaksi Unik
             $no_transaksi = 'TRX-' . date('Ymd') . '-' . strtoupper(Str::random(6));
 
+            // Simpan ke tabel transaksi
             DB::table('transaksi')->insert([
-                'no_transaksi' => $no_transaksi,
-                'id_customer'  => $customer->id_customer,
-                'tanggal'      => now(),
-                'status'       => 'Pending',
-                'created_at'   => now(),
-                'updated_at'   => now(),
+                'no_transaksi'      => $no_transaksi,
+                'id_customer'       => $customer->id_customer,
+                'nominal'           => $request->nominal,
+                'metode_pembayaran' => $request->metode_pembayaran,
+                'tanggal'           => now(),
+                'status'            => 'Pending',
+                'created_at'        => now(),
+                'updated_at'        => now(),
             ]);
 
             DB::commit();
 
-            return back()->with('success', 'Pesanan berhasil dibuat! Catat Nomor Transaksi Anda: ' . $no_transaksi);
+            return redirect()->route('topup.nota', $no_transaksi);
 
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Terjadi kesalahan sistem.');
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
     /**
-     * 4. FITUR CEK TRANSAKSI
+     * 4. TAMPILAN NOTA SETELAH BELI
+     */
+    public function showNota($no_trx)
+    {
+        $nota = DB::table('transaksi')
+            ->join('customers', 'transaksi.id_customer', '=', 'customers.id_customer')
+            ->join('games', 'customers.id_game', '=', 'games.id_game')
+            ->where('transaksi.no_transaksi', $no_trx)
+            ->select('transaksi.*', 'customers.email', 'customers.id_akun', 'games.nama_game')
+            ->first();
+
+        if (!$nota) {
+            return redirect()->route('home');
+        }
+
+        return view('nota', compact('nota'));
+    }
+
+    /**
+     * 5. FITUR CEK STATUS TRANSAKSI (SEARCH)
      */
     public function search(Request $request)
     {
@@ -90,5 +114,42 @@ class TransaksiController extends Controller
         }
 
         return view('cek-transaksi', compact('results'));
+    }
+
+    /**
+     * 6. DASHBOARD ADMIN (KELOLA PESANAN)
+     */
+    public function adminDashboard()
+    {
+        $transactions = DB::table('transaksi')
+            ->join('customers', 'transaksi.id_customer', '=', 'customers.id_customer')
+            ->join('games', 'customers.id_game', '=', 'games.id_game')
+            ->select('transaksi.*', 'customers.email', 'customers.id_akun', 'games.nama_game')
+            ->orderBy('transaksi.created_at', 'desc')
+            ->get();
+
+        return view('admin_dashboard', compact('transactions'));
+    }
+
+    /**
+     * 7. UPDATE STATUS TRANSAKSI (AKSI ADMIN)
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        // Validasi status yang masuk
+        $request->validate([
+            'status' => 'required|in:Pending,Success,Failed'
+        ]);
+
+        // Gunakan where yang sesuai dengan Primary Key tabel transaksi Anda
+        // Biasanya 'id_transaksi' atau 'id'
+        DB::table('transaksi')
+            ->where('id_transaksi', $id) 
+            ->update([
+                'status' => $request->status,
+                'updated_at' => now()
+            ]);
+
+        return back()->with('success', 'Status transaksi berhasil diperbarui!');
     }
 }
