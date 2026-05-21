@@ -1,10 +1,3 @@
-Berikut adalah kode utuh untuk file **`index.blade.php`** kamu yang sudah disesuaikan agar membaca data secara dinamis dari database.
-
-Variabel di dalam `@foreach` telah disesuaikan menggunakan `$games` (sesuai fungsi `index` di controller), dan pemanggilan gambarnya diubah agar fleksibel membaca kolom `$game->gambar` hasil upload dari admin panel.
-
-Silakan **copy** seluruh kode di bawah ini dan langsung **timpa (replace)** semua isi file `resources/views/index.blade.php`:
-
-```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -96,10 +89,11 @@ Silakan **copy** seluruh kode di bawah ini dan langsung **timpa (replace)** semu
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            @foreach($games as $game)
+@foreach($games as $game)
             <a href="{{ route('topup.detail', $game->id_game) }}" class="game-card bg-dark-secondary border border-gray-800 rounded-3xl overflow-hidden shadow-lg block group">
                 <div class="relative aspect-[3/4]">
-                    <img src="{{ asset('images/' . ($game->gambar ?? 'default.png')) }}" 
+                    <img src="{{ asset('images/' . $game->id_game . '.png') }}" 
+                         onerror="this.onerror=null; this.src='{{ asset('images/default.png') }}';" 
                          alt="{{ $game->nama_game }}" 
                          class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                     
@@ -111,15 +105,15 @@ Silakan **copy** seluruh kode di bawah ini dan langsung **timpa (replace)** semu
                     </div>
                 </div>
             </a>
-            @endforeach
+@endforeach
         </div>
 
-        @if(count($games) == 0)
+@if(count($games) == 0)
         <div class="p-20 text-center bg-dark-secondary border border-gray-800 rounded-3xl mt-6">
             <i class="fa fa-gamepad text-4xl text-gray-800 mb-4"></i>
             <p class="text-xs text-gray-600 font-bold uppercase tracking-[0.3em]">Belum ada data game di database</p>
         </div>
-        @endif
+@endif
     </section>
 
     <footer class="bg-dark-secondary py-12 border-t border-gray-800">

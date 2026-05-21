@@ -51,7 +51,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/nominal/update/{id}', [AdminController::class, 'updateNominal'])->name('nominal.update');
     Route::delete('/nominal/delete/{id}', [AdminController::class, 'destroyNominal'])->name('nominal.destroy');
 
-    // 9. Pengaturan Kontak Pembayaran (Ubah No. DANA & QRIS Sewaktu-waktu)
+    // 9. Pengaturan Kontak Pembayaran (Ubah No. DANA & QRIS)
+    // Nama rute otomatis menjadi 'admin.pengaturan.index' dan 'admin.pengaturan.update'
     Route::get('/pengaturan', [AdminController::class, 'indexPengaturan'])->name('pengaturan.index');
     Route::post('/pengaturan/update', [AdminController::class, 'updatePengaturan'])->name('pengaturan.update');
     

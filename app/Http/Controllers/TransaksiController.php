@@ -15,8 +15,8 @@ class TransaksiController extends Controller
      */
     public function index()
     {
-        $allGames = Game::all();
-        return view('index', compact('allGames'));
+        $games = Game::all();
+        return view('index', compact('games'));
     }
 
     /**
@@ -24,8 +24,24 @@ class TransaksiController extends Controller
      */
     public function show($id)
     {
-        $game = Game::findOrFail($id);
-        return view('topup_form', compact('game'));
+        // Mencari game berdasarkan primary key database (id_game)
+        $game = Game::where('id_game', $id)->firstOrFail();
+        
+        // Ambil data nominal berdasarkan id_game untuk form pembelian dinamis
+        $nominals = DB::table('nominal_games')->where('id_game', $id)->get();
+        
+        // AMBIL DATA PENGATURAN QRIS & NO DANA SECARA DINAMIS
+        $config = DB::table('pengaturan')->first();
+        
+        // Jika data pengaturan belum ada pancingannya di DB, buatkan objek kosong agar blade tidak crash
+        if (!$config) {
+            $config = (object) [
+                'no_dana' => '08123456789',
+                'qris_path' => 'qris.png'
+            ];
+        }
+        
+        return view('topup_form', compact('game', 'nominals', 'config'));
     }
 
     /**
@@ -92,7 +108,10 @@ class TransaksiController extends Controller
             return redirect()->route('home');
         }
 
-        return view('nota', compact('nota'));
+        // Ambil data kontak pembayaran untuk ditampilkan di nota jika diperlukan
+        $config = DB::table('pengaturan')->first();
+
+        return view('nota', compact('nota', 'config'));
     }
 
     /**
@@ -136,13 +155,10 @@ class TransaksiController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
-        // Validasi status yang masuk
         $request->validate([
             'status' => 'required|in:Pending,Success,Failed'
         ]);
 
-        // Gunakan where yang sesuai dengan Primary Key tabel transaksi Anda
-        // Biasanya 'id_transaksi' atau 'id'
         DB::table('transaksi')
             ->where('id_transaksi', $id) 
             ->update([

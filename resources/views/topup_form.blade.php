@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Topup {{ $game->nama_game }} | K3 STORE</title>
+    <title>Metode Pembayaran | K3 STORE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -11,13 +11,6 @@
         .bg-dark-secondary { background-color: #1f1f1f; }
         .text-gold { color: #fbbf24; }
         .bg-gold { background-color: #fbbf24; }
-        
-        /* Indikator terpilih untuk Nominal */
-        .selected-card {
-            border-color: #fbbf24 !important;
-            background-color: rgba(251, 191, 36, 0.1) !important;
-            box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
-        }
     </style>
 </head>
 <body class="bg-dark-primary text-white font-sans antialiased">
@@ -28,127 +21,123 @@
                 <div class="bg-gold p-2 rounded-lg shadow-[0_0_15px_rgba(251,191,36,0.3)]">
                     <i class="fa fa-bolt text-black text-xl"></i>
                 </div>
-                <h1 class="text-xl font-black tracking-tighter uppercase italic group-hover:text-gold transition-colors">K3<span class="text-gold">STORE</span></h1>
+                <h1 class="text-xl font-black tracking-tighter uppercase italic">
+                    K3<span class="text-gold">STORE</span>
+                </h1>
             </a>
         </div>
     </nav>
 
-    <main class="container mx-auto px-4 py-12 max-w-5xl">
+    <div class="container mx-auto px-4 py-10 max-w-4xl">
+        
+        @if(session('error'))
+        <div class="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl text-sm font-bold">
+            {{ session('error') }}
+        </div>
+        @endif
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             
             <div class="md:col-span-1">
-                <div class="bg-dark-secondary rounded-[2rem] border border-gray-800 overflow-hidden shadow-2xl">
-                    <img src="{{ asset('images/' . $game->id_game . '.png') }}" class="w-full h-64 object-cover">
-                    <div class="p-8">
-                        <h2 class="text-2xl font-black uppercase italic tracking-tighter mb-4">{{ $game->nama_game }}</h2>
-                        <div class="space-y-4 text-gray-400 text-sm leading-relaxed">
-                            <p>1. Lengkapi Data Akun.</p>
-                            <p>2. Pilih Nominal & Harga.</p>
-                            <p>3. Pilih Metode Pembayaran.</p>
-                            <p>4. Klik Beli & Simpan Nota.</p>
-                        </div>
-                    </div>
+                <div class="bg-dark-secondary border border-gray-800 rounded-3xl p-6 sticky top-24 text-center">
+                    <img src="{{ asset('images/' . $game->id_game . '.png') }}" 
+                         onerror="this.onerror=null; this.src='{{ asset('images/default.png') }}';" 
+                         alt="{{ $game->nama_game }}" 
+                         class="w-32 h-32 mx-auto rounded-3xl object-cover shadow-xl mb-4 border-2 border-gray-800">
+                    <h2 class="text-xl font-black uppercase tracking-wider mb-2">{{ $game->nama_game }}</h2>
+                    <p class="text-xs text-gray-400 leading-relaxed">Top up aman, murah, dan instan hanya di K3 STORE. Pilihan pembayaran lengkap termasuk DANA dan QRIS Otomatis.</p>
                 </div>
             </div>
 
-            <div class="md:col-span-2 space-y-6">
-                <form action="{{ route('topup.store') }}" method="POST" id="topupForm">
+            <div class="md:col-span-2">
+                <form action="{{ route('topup.store') }}" method="POST" class="space-y-6">
                     @csrf
                     <input type="hidden" name="id_game" value="{{ $game->id_game }}">
-                    <input type="hidden" name="nominal" id="input_nominal" required>
 
-                    <div class="bg-dark-secondary p-8 rounded-[2rem] border border-gray-800 shadow-2xl mb-6">
-                        <div class="flex items-center gap-4 mb-8">
-                            <span class="bg-gold text-black w-8 h-8 flex items-center justify-center rounded-full font-black italic text-sm">1</span>
-                            <h3 class="text-xl font-black uppercase tracking-widest">Data Akun</h3>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="email" name="email" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl focus:border-gold outline-none transition-all" placeholder="Email Aktif" required>
-                            <input type="text" name="id_akun" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-2xl focus:border-gold outline-none transition-all" placeholder="ID (Server)" required>
-                        </div>
-                    </div>
-
-                    <div class="bg-dark-secondary p-8 rounded-[2rem] border border-gray-800 shadow-2xl mb-6">
-                        <div class="flex items-center gap-4 mb-8">
-                            <span class="bg-gold text-black w-8 h-8 flex items-center justify-center rounded-full font-black italic text-sm">2</span>
-                            <h3 class="text-xl font-black uppercase tracking-widest">Pilih Nominal</h3>
-                        </div>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            @php
-                                $gn = strtolower($game->nama_game);
-                                if(str_contains($gn, 'mobile legends')) {
-                                    $vars = [['l'=>'86 Diamonds', 'h'=>'Rp 22.000'], ['l'=>'172 Diamonds', 'h'=>'Rp 44.000'], ['l'=>'257 Diamonds', 'h'=>'Rp 66.000'], ['l'=>'706 Diamonds', 'h'=>'Rp 175.000']];
-                                } elseif(str_contains($gn, 'free fire')) {
-                                    $vars = [['l'=>'140 Diamonds', 'h'=>'Rp 19.500'], ['l'=>'355 Diamonds', 'h'=>'Rp 48.000'], ['l'=>'720 Diamonds', 'h'=>'Rp 95.000'], ['l'=>'1440 Diamonds', 'h'=>'Rp 185.000']];
-                                } elseif(str_contains($gn, 'roblox')) {
-                                    $vars = [['l'=>'80 Robux', 'h'=>'Rp 15.000'], ['l'=>'400 Robux', 'h'=>'Rp 75.000'], ['l'=>'800 Robux', 'h'=>'Rp 145.000'], ['l'=>'1700 Robux', 'h'=>'Rp 310.000']];
-                                } else {
-                                    $vars = [['l'=>'100 Points', 'h'=>'Rp 15.000'], ['l'=>'500 Points', 'h'=>'Rp 70.000'], ['l'=>'1000 Points', 'h'=>'Rp 135.000']];
-                                }
-                            @endphp
-                            
-                            @foreach($vars as $v)
-                            <div onclick="setNominal(this, '{{ $v['l'] }}')" class="nominal-item bg-gray-900 border border-gray-700 p-4 rounded-2xl cursor-pointer hover:border-gold transition-all text-center group">
-                                <p class="text-xs font-bold group-hover:text-gold transition-colors">{{ $v['l'] }}</p>
-                                <p class="text-[9px] text-gray-500 mt-1 font-mono uppercase">{{ $v['h'] }}</p>
-                            </div>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <div class="bg-dark-secondary p-8 rounded-[2rem] border border-gray-800 shadow-2xl mb-6">
-                        <div class="flex items-center gap-4 mb-8">
-                            <span class="bg-gold text-black w-8 h-8 flex items-center justify-center rounded-full font-black italic text-sm">3</span>
-                            <h3 class="text-xl font-black uppercase tracking-widest">Metode Pembayaran</h3>
+                    <div class="bg-dark-secondary border border-gray-800 rounded-3xl p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-6 h-6 rounded-full bg-gold text-black flex items-center justify-center font-black text-xs">1</div>
+                            <h3 class="font-black uppercase tracking-wider text-sm">Lengkapi Data Akun</h3>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            
-                            <label class="group relative cursor-pointer">
-                                <input type="radio" name="metode_pembayaran" value="QRIS" class="peer hidden" required>
-                                <div class="flex items-center justify-between p-4 bg-gray-900 border border-gray-700 rounded-2xl transition-all peer-checked:border-gold peer-checked:bg-gold/10 group-hover:border-gold/50">
-                                    <span class="text-xs font-bold italic uppercase tracking-wider peer-checked:text-gold">QRIS (Otomatis)</span>
-                                    <i class="fa fa-qrcode text-gray-600 peer-checked:text-gold"></i>
-                                </div>
-                                <div class="absolute -top-2 -right-2 bg-gold text-black w-5 h-5 rounded-full flex items-center justify-center scale-0 peer-checked:scale-100 transition-transform">
-                                    <i class="fa fa-check text-[10px] font-bold"></i>
-                                </div>
-                            </label>
-
-                            <label class="group relative cursor-pointer">
-                                <input type="radio" name="metode_pembayaran" value="DANA" class="peer hidden">
-                                <div class="flex items-center justify-between p-4 bg-gray-900 border border-gray-700 rounded-2xl transition-all peer-checked:border-gold peer-checked:bg-gold/10 group-hover:border-gold/50">
-                                    <span class="text-xs font-bold italic uppercase tracking-wider peer-checked:text-gold">DANA</span>
-                                    <i class="fa fa-wallet text-gray-600 peer-checked:text-gold"></i>
-                                </div>
-                                <div class="absolute -top-2 -right-2 bg-gold text-black w-5 h-5 rounded-full flex items-center justify-center scale-0 peer-checked:scale-100 transition-transform">
-                                    <i class="fa fa-check text-[10px] font-bold"></i>
-                                </div>
-                            </label>
-
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">ID Akun / User ID</label>
+                                <input type="text" name="id_akun" required placeholder="Masukkan ID Akun" class="w-full bg-dark-primary border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Email (Untuk Nota)</label>
+                                <input type="email" name="email" required placeholder="alamat@email.com" class="w-full bg-dark-primary border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold transition-colors">
+                            </div>
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full bg-gold hover:bg-yellow-500 text-black font-black py-5 rounded-2xl transition-all shadow-lg uppercase tracking-widest text-sm">
-                        Beli Sekarang <i class="fa fa-bolt ml-2"></i>
+                    <div class="bg-dark-secondary border border-gray-800 rounded-3xl p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-6 h-6 rounded-full bg-gold text-black flex items-center justify-center font-black text-xs">2</div>
+                            <h3 class="font-black uppercase tracking-wider text-sm">Pilih Nominal Top Up</h3>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            @foreach($nominals as $nominal)
+                            <label class="border border-gray-800 rounded-2xl p-4 text-center cursor-pointer hover:border-gold block relative transition-all group">
+                                <input type="radio" name="nominal" value="{{ $nominal->layanan }}" required class="absolute top-3 right-3 accent-gold">
+                                <p class="font-bold text-xs uppercase tracking-wide mb-1 group-hover:text-gold transition-colors">{{ $nominal->layanan }}</p>
+                                <p class="text-[11px] text-gray-400 font-semibold">Rp {{ number_format($nominal->harga, 0, ',', '.') }}</p>
+                            </label>
+                            @endforeach
+                        </div>
+                        @if(count($nominals) == 0)
+                        <p class="text-xs text-gray-500 italic text-center py-4">Belum ada varian produk untuk game ini.</p>
+                        @endif
+                    </div>
+
+                    <div class="bg-dark-secondary border border-gray-800 rounded-3xl p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-6 h-6 rounded-full bg-gold text-black flex items-center justify-center font-black text-xs">3</div>
+                            <h3 class="font-black uppercase tracking-wider text-sm">Metode Pembayaran</h3>
+                        </div>
+                        
+                        <div class="mb-6 p-6 bg-dark-primary border border-gray-800 rounded-2xl text-center">
+                            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Scan QRIS Live Kelompok 3</p>
+                            
+                            <img src="{{ asset('images/' . ($config->qris_path ?? 'qris.png')) }}?v={{ time() }}" 
+                                 onerror="this.onerror=null; this.src='{{ asset('images/default_qris.png') }}';"
+                                 alt="QRIS Pembayaran" 
+                                 class="w-48 h-48 mx-auto object-contain rounded-xl p-2 bg-white shadow-lg border border-gray-700 mb-2">
+                            
+                            <p class="text-[10px] text-yellow-500 font-medium">Silakan simpan/scan kode QRIS di atas sebelum klik beli.</p>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label class="flex items-center justify-between p-4 bg-dark-primary border border-gray-800 rounded-2xl cursor-pointer hover:border-gold transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <input type="radio" name="metode_pembayaran" value="QRIS" checked class="accent-gold">
+                                    <span class="text-xs font-bold tracking-wider">QRIS / E-WALLET AUTOMATIC</span>
+                                </div>
+                                <i class="fa fa-qrcode text-gray-400"></i>
+                            </label>
+                            <label class="flex items-center justify-between p-4 bg-dark-primary border border-gray-800 rounded-2xl cursor-pointer hover:border-gold transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <input type="radio" name="metode_pembayaran" value="DANA" class="accent-gold">
+                                    <span class="text-xs font-bold tracking-wider">TRANSFER DANA</span>
+                                </div>
+                                <i class="fa fa-wallet text-gray-400"></i>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-gold text-black font-black text-xs uppercase tracking-[0.2em] py-4 rounded-2xl hover:bg-yellow-500 transition-colors shadow-[0_4px_20px_rgba(251,191,36,0.2)]">
+                        <i class="fa fa-shopping-cart mr-2"></i> Beli Sekarang & Bayar
                     </button>
+
                 </form>
             </div>
+
         </div>
-    </main>
+    </div>
 
-    <footer class="py-10 text-center opacity-30">
-        <p class="text-[10px] font-bold tracking-[0.3em] uppercase italic">K3STORE Digital Delivery System</p>
+    <footer class="bg-dark-secondary py-8 border-t border-gray-800 mt-20 text-center text-gray-600 text-[10px] font-bold tracking-[0.3em] uppercase">
+        &copy; 2026 KELOMPOK 3 ADVERTISING PROJECT
     </footer>
-
-    <script>
-        function setNominal(element, value) {
-            document.querySelectorAll('.nominal-item').forEach(item => {
-                item.classList.remove('selected-card');
-            });
-            element.classList.add('selected-card');
-            document.getElementById('input_nominal').value = value;
-        }
-    </script>
 
 </body>
 </html>
