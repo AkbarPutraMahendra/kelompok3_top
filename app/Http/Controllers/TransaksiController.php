@@ -128,7 +128,7 @@ class TransaksiController extends Controller
             ->orderBy('transaksi.created_at', 'desc')
             ->get();
 
-        return view('admin_dashboard', compact('transactions'));
+        return view('admin.admin_dashboard', compact('transactions'));
     }
 
     /**
