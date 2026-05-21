@@ -82,7 +82,7 @@
                 <button onclick="window.print()" class="w-full bg-white/5 hover:bg-white/10 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
                     <i class="fa fa-download mr-2"></i> Simpan Nota (PDF)
                 </button>
-                <a href="https://wa.me/6281234567890?text=Halo%20Admin%20K3STORE,%20saya%20ingin%20konfirmasi%20pembayaran%20untuk%20No.%20Transaksi:%20{{ $nota->no_transaksi }}" 
+                <a href="https://wa.me/6282311283934?text=Halo%20Admin%20K3STORE,%20saya%20ingin%20konfirmasi%20pembayaran%20untuk%20No.%20Transaksi:%20{{ $nota->no_transaksi }}" 
                    target="_blank" 
                    class="block text-center bg-gold hover:bg-yellow-500 text-black py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
                     <i class="fab fa-whatsapp mr-2 text-lg"></i> Konfirmasi Pembayaran
