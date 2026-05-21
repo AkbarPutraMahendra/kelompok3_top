@@ -1,3 +1,10 @@
+Berikut adalah kode utuh untuk file **`index.blade.php`** kamu yang sudah disesuaikan agar membaca data secara dinamis dari database.
+
+Variabel di dalam `@foreach` telah disesuaikan menggunakan `$games` (sesuai fungsi `index` di controller), dan pemanggilan gambarnya diubah agar fleksibel membaca kolom `$game->gambar` hasil upload dari admin panel.
+
+Silakan **copy** seluruh kode di bawah ini dan langsung **timpa (replace)** semua isi file `resources/views/index.blade.php`:
+
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -42,10 +49,10 @@
             </a>
             
             <div class="flex gap-8 text-[10px] font-black tracking-[0.2em]">
-                <a href="{{ route('home') }}" class="text-gray-400 hover:text-gold transition-all flex items-center gap-2">
+                <a href="{{ route('home') }}" class="text-gold transition-all flex items-center gap-2">
                     <i class="fa fa-gamepad"></i> TOPUP
                 </a>
-                <a href="/cek-transaksi" class="text-gray-400 hover:text-gold transition-all flex items-center gap-2">
+                <a href="{{ route('transaksi.search') }}" class="text-gray-400 hover:text-gold transition-all flex items-center gap-2">
                     <i class="fa fa-search"></i> LACAK PESANAN
                 </a>
             </div>
@@ -89,23 +96,30 @@
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            @foreach($allGames as $game)
+            @foreach($games as $game)
             <a href="{{ route('topup.detail', $game->id_game) }}" class="game-card bg-dark-secondary border border-gray-800 rounded-3xl overflow-hidden shadow-lg block group">
                 <div class="relative aspect-[3/4]">
-                    <img src="{{ asset('images/' . $game->id_game . '.png') }}" 
+                    <img src="{{ asset('images/' . ($game->gambar ?? 'default.png')) }}" 
                          alt="{{ $game->nama_game }}" 
                          class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                     
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80 transition-opacity group-hover:opacity-90"></div>
                     
                     <div class="absolute bottom-0 left-0 right-0 p-6 text-center">
-                        <p class="font-black text-sm uppercase tracking-wider group-hover:text-gold transition-colors">{{ $game->nama_game }}</p>
+                        <p class="font-black text-sm uppercase tracking-wider group-hover:text-gold transition-colors truncate">{{ $game->nama_game }}</p>
                         <div class="w-8 h-1 bg-gold mx-auto mt-2 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                     </div>
                 </div>
             </a>
             @endforeach
         </div>
+
+        @if(count($games) == 0)
+        <div class="p-20 text-center bg-dark-secondary border border-gray-800 rounded-3xl mt-6">
+            <i class="fa fa-gamepad text-4xl text-gray-800 mb-4"></i>
+            <p class="text-xs text-gray-600 font-bold uppercase tracking-[0.3em]">Belum ada data game di database</p>
+        </div>
+        @endif
     </section>
 
     <footer class="bg-dark-secondary py-12 border-t border-gray-800">
