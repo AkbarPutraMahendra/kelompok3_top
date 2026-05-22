@@ -7,6 +7,18 @@
         <p class="text-xs text-gray-500 mt-1 uppercase tracking-wider">Kelola data game yang aktif ditayangkan pada website</p>
     </div>
 
+    @if(session('success'))
+    <div class="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-green-400 text-xs font-bold uppercase tracking-wider">
+        {{ session('success') }}
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs font-bold uppercase tracking-wider">
+        {{ session('error') }}
+    </div>
+    @endif
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="bg-[#1f1f1f] p-6 rounded-[2rem] border border-gray-800 h-fit shadow-xl">
             <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2">
@@ -50,7 +62,10 @@
                         @foreach($games as $game)
                         <tr class="hover:bg-white/[0.01] transition-colors">
                             <td class="p-6 w-24">
-                                <img src="{{ asset('images/' . ($game->gambar ?? 'default.png')) }}" alt="{{ $game->nama_game }}" class="w-12 h-12 object-cover rounded-xl border border-gray-700 bg-gray-900">
+                                <img src="{{ asset('images/' . $game->id_game . '.png') }}" 
+                                     onerror="this.onerror=null; this.src='{{ asset('images/' . $game->id_game . '.jpg') }}';" 
+                                     alt="{{ $game->nama_game }}" 
+                                     class="w-12 h-12 object-cover rounded-xl border border-gray-700 bg-gray-900">
                             </td>
                             <td class="p-6 font-black uppercase italic tracking-wider text-gray-200">
                                 {{ $game->nama_game }}

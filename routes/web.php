@@ -38,17 +38,27 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // 6. Dashboard Utama Admin & Kelola Pesanan
     Route::get('/dashboard', [TransaksiController::class, 'adminDashboard'])->name('dashboard');
     Route::post('/update-status/{id}', [TransaksiController::class, 'updateStatus'])->name('updateStatus');
+    
+    // TAMBAHAN: RUTE DOWNLOAD SPREADSHEET EXCEL (DENGAN FILTER TANGGAL/BULAN/TAHUN)
+    Route::get('/transactions/export', [TransaksiController::class, 'exportExcel'])->name('transactions.export');
+
+    // TAMBAHAN: RUTE UNTUK KOSONGKAN / CLEAR SEMUA RIWAYAT TRANSAKSI DAN PELANGGAN
+    Route::delete('/transactions/truncate', [TransaksiController::class, 'truncateTransaksi'])->name('transactions.truncate');
 
     // 7. CRUD Daftar Games (Menambah/Mengedit Game di Web)
     Route::get('/games', [AdminController::class, 'indexGames'])->name('games.index');
-    Route::post('/games/store', [AdminController::class, 'storeGame'])->name('games.store');
+    
+    // PERBAIKAN: Diarahkan ke TransaksiController sesuai fungsi storeGame otomatis yang kita buat
+    Route::post('/games/store', [TransaksiController::class, 'storeGame'])->name('games.store');
+    
     Route::post('/games/update/{id}', [AdminController::class, 'updateGame'])->name('games.update');
-    Route::delete('/games/delete/{id}', [AdminController::class, 'destroyGame'])->name('games.destroy');
+    
+    // PERBAIKAN: Nama URL disesuaikan dengan form action di blade yang memanggil (.destroy)
+    Route::delete('/games/destroy/{id}', [AdminController::class, 'destroyGame'])->name('games.destroy');
 
     // =========================================================================
     // 8. CRUD Isi Game (SUDAH DISINKRONKAN DENGAN LAYOUT ADMIN BLADE)
     // =========================================================================
-    // Menggunakan nominal.index agar dibaca sempurna oleh request()->routeIs('admin.nominal.*')
     Route::get('/nominal', [AdminController::class, 'indexNominal'])->name('nominal.index');
     Route::post('/nominal/store', [AdminController::class, 'storeNominal'])->name('nominal.store');
     Route::post('/nominal/update/{id}', [AdminController::class, 'updateNominal'])->name('nominal.update');
