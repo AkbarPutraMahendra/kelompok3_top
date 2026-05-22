@@ -93,23 +93,42 @@ class TransaksiController extends Controller
     }
 
     /**
-     * 4. TAMPILAN NOTA SETELAH BELI
+     * 4. TAMPILAN NOTA SETELAH BELI (PERBAIKAN TOTAL: HARGA & QRIS AMAN)
      */
     public function showNota($no_trx)
     {
+        // Join dikunci secara spesifik agar data transaksi tidak bentrok dengan data lain
         $nota = DB::table('transaksi')
             ->join('customers', 'transaksi.id_customer', '=', 'customers.id_customer')
             ->join('games', 'customers.id_game', '=', 'games.id_game')
+            ->leftJoin('nominal_games', function($join) {
+                $join->on('transaksi.nominal', '=', 'nominal_games.layanan')
+                     ->on('games.id_game', '=', 'nominal_games.id_game');
+            })
             ->where('transaksi.no_transaksi', $no_trx)
-            ->select('transaksi.*', 'customers.email', 'customers.id_akun', 'games.nama_game')
+            ->select(
+                'transaksi.*', 
+                'customers.email', 
+                'customers.id_akun', 
+                'games.nama_game',
+                'nominal_games.harga'
+            )
             ->first();
 
         if (!$nota) {
             return redirect()->route('home');
         }
 
-        // Ambil data kontak pembayaran untuk ditampilkan di nota jika diperlukan
+        // Ambil data pengaturan kontak & QRIS dari database secara independen
         $config = DB::table('pengaturan')->first();
+
+        // Pengaman cadangan jika isi baris tabel pengaturan masih kosong/null
+        if (!$config) {
+            $config = (object) [
+                'no_dana' => '0812-3456-7890',
+                'qris_path' => 'qris.png'
+            ];
+        }
 
         return view('nota', compact('nota', 'config'));
     }

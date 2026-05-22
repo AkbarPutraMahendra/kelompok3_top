@@ -62,11 +62,11 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">ID Akun / User ID</label>
-                                <input type="text" name="id_akun" required placeholder="Masukkan ID Akun" class="w-full bg-dark-primary border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold transition-colors">
+                                <input type="text" name="id_akun" required placeholder="Masukkan ID Akun" class="w-full bg-dark-primary border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold transition-colors text-white">
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Email (Untuk Nota)</label>
-                                <input type="email" name="email" required placeholder="alamat@email.com" class="w-full bg-dark-primary border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold transition-colors">
+                                <input type="email" name="email" required placeholder="alamat@email.com" class="w-full bg-dark-primary border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold transition-colors text-white">
                             </div>
                         </div>
                     </div>
@@ -96,17 +96,6 @@
                             <h3 class="font-black uppercase tracking-wider text-sm">Metode Pembayaran</h3>
                         </div>
                         
-                        <div class="mb-6 p-6 bg-dark-primary border border-gray-800 rounded-2xl text-center">
-                            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">Scan QRIS Live Kelompok 3</p>
-                            
-                            <img src="{{ asset('images/' . ($config->qris_path ?? 'qris.png')) }}?v={{ time() }}" 
-                                 onerror="this.onerror=null; this.src='{{ asset('images/default_qris.png') }}';"
-                                 alt="QRIS Pembayaran" 
-                                 class="w-48 h-48 mx-auto object-contain rounded-xl p-2 bg-white shadow-lg border border-gray-700 mb-2">
-                            
-                            <p class="text-[10px] text-yellow-500 font-medium">Silakan simpan/scan kode QRIS di atas sebelum klik beli.</p>
-                        </div>
-
                         <div class="space-y-3">
                             <label class="flex items-center justify-between p-4 bg-dark-primary border border-gray-800 rounded-2xl cursor-pointer hover:border-gold transition-colors">
                                 <div class="flex items-center gap-3">
@@ -115,6 +104,7 @@
                                 </div>
                                 <i class="fa fa-qrcode text-gray-400"></i>
                             </label>
+                            
                             <label class="flex items-center justify-between p-4 bg-dark-primary border border-gray-800 rounded-2xl cursor-pointer hover:border-gold transition-colors">
                                 <div class="flex items-center gap-3">
                                     <input type="radio" name="metode_pembayaran" value="DANA" class="accent-gold">

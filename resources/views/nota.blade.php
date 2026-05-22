@@ -43,20 +43,26 @@
             <h2 class="text-center text-lg font-black uppercase italic mb-6">Pembayaran <span class="text-gold">{{ $nota->metode_pembayaran }}</span></h2>
             
             @if($nota->metode_pembayaran == 'QRIS')
-                <div class="bg-white p-4 rounded-2xl mb-6 mx-auto w-48 h-48">
-                    <img src="{{ asset('images/qris_sample.png') }}" alt="QRIS K3STORE" class="w-full">
+                <div class="bg-white p-4 rounded-2xl mb-6 mx-auto w-48 h-48 flex items-center justify-center">
+                    <img src="{{ asset('images/' . $config->qris_path) }}" 
+                         onerror="this.onerror=null; this.src='{{ asset('images/qris.png') }}';" 
+                         alt="QRIS K3STORE" 
+                         class="w-full h-full object-contain">
                 </div>
+                <p class="text-[10px] text-yellow-500 text-center font-medium mb-6 uppercase">Silakan screenshot / scan kode QRIS di atas</p>
             @else
                 <div class="bg-gray-900 border border-dashed border-gray-700 p-6 rounded-2xl mb-6 text-center">
                     <p class="text-[10px] text-gray-500 uppercase mb-2">Transfer DANA ke:</p>
-                    <p class="text-xl font-black text-gold">0812-3456-7890</p>
-                    <p class="text-[10px] font-bold mt-1 uppercase">A/N K3 STORE OFFICIAL</p>
+                    <p class="text-xl font-black text-gold tracking-wider">{{ $config->no_dana }}</p>
+                    <p class="text-[10px] font-bold mt-1 uppercase text-gray-400">A/N K3 STORE OFFICIAL</p>
                 </div>
             @endif
 
             <div class="bg-gray-900/50 p-4 rounded-2xl border border-gray-800">
                 <p class="text-[10px] text-gray-500 uppercase mb-1 text-center">Total Tagihan</p>
-                <p class="text-2xl font-black text-center text-gold">{{ $nota->nominal }}</p>
+                <p class="text-2xl font-black text-center text-gold">
+                    Rp {{ number_format($nota->harga ?? 0, 0, ',', '.') }}
+                </p>
             </div>
 
             <div class="mt-8 space-y-3 font-mono text-[11px] border-t border-gray-800 pt-6">
@@ -66,11 +72,11 @@
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-500 uppercase">Game</span>
-                    <span class="text-right font-bold">{{ $nota->nama_game }}</span>
+                    <span class="text-right font-bold uppercase">{{ $nota->nama_game }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-500 uppercase">Varian</span>
-                    <span class="font-bold text-gold">{{ $nota->nominal }}</span>
+                    <span class="font-bold text-gold uppercase">{{ $nota->nominal }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-500 uppercase">Target ID</span>
@@ -82,7 +88,7 @@
                 <button onclick="window.print()" class="w-full bg-white/5 hover:bg-white/10 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
                     <i class="fa fa-download mr-2"></i> Simpan Nota (PDF)
                 </button>
-                <a href="https://wa.me/6282311283934?text=Halo%20Admin%20K3STORE,%20saya%20ingin%20konfirmasi%20pembayaran%20untuk%20No.%20Transaksi:%20{{ $nota->no_transaksi }}" 
+                <a href="https://wa.me/6282311283934?text=Halo%20Admin%20K3STORE,%20saya%20ingin%20konfirmasi%20pembayaran%20via%20{{ $nota->metode_pembayaran }}%20untuk%20No.%20Transaksi:%20{{ $nota->no_transaksi }}" 
                    target="_blank" 
                    class="block text-center bg-gold hover:bg-yellow-500 text-black py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
                     <i class="fab fa-whatsapp mr-2 text-lg"></i> Konfirmasi Pembayaran

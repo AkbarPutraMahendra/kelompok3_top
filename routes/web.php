@@ -45,14 +45,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('/games/update/{id}', [AdminController::class, 'updateGame'])->name('games.update');
     Route::delete('/games/delete/{id}', [AdminController::class, 'destroyGame'])->name('games.destroy');
 
-    // 8. CRUD Isi Game (Varian Nominal, Harga, & Kelola Stok)
+    // =========================================================================
+    // 8. CRUD Isi Game (SUDAH DISINKRONKAN DENGAN LAYOUT ADMIN BLADE)
+    // =========================================================================
+    // Menggunakan nominal.index agar dibaca sempurna oleh request()->routeIs('admin.nominal.*')
     Route::get('/nominal', [AdminController::class, 'indexNominal'])->name('nominal.index');
     Route::post('/nominal/store', [AdminController::class, 'storeNominal'])->name('nominal.store');
     Route::post('/nominal/update/{id}', [AdminController::class, 'updateNominal'])->name('nominal.update');
     Route::delete('/nominal/delete/{id}', [AdminController::class, 'destroyNominal'])->name('nominal.destroy');
 
     // 9. Pengaturan Kontak Pembayaran (Ubah No. DANA & QRIS)
-    // Nama rute otomatis menjadi 'admin.pengaturan.index' dan 'admin.pengaturan.update'
     Route::get('/pengaturan', [AdminController::class, 'indexPengaturan'])->name('pengaturan.index');
     Route::post('/pengaturan/update', [AdminController::class, 'updatePengaturan'])->name('pengaturan.update');
     
