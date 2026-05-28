@@ -26,12 +26,12 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // 3. Membuat atau Update akun Admin (Anti-Duplicate)
+        // 3. Membuat atau Update akun Admin K3 STORE (Anti-Duplicate)
         User::updateOrCreate(
-            ['email' => 'admin@example.com'],
+            ['email' => 'admin@k3store.com'], // Email untuk login admin kamu
             [
-                'name' => 'Admin Topup',
-                'password' => bcrypt('password123'), // Anda bisa sesuaikan passwordnya
+                'name' => 'Admin K3 Store',
+                'password' => bcrypt('admin12345'), // Password untuk login admin kamu
             ]
         );
     }

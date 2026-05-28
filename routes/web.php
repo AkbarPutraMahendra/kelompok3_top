@@ -2,70 +2,96 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TransaksiController;
-use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\NewPasswordController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes - K3 STORE PROJECT (Dinamis & Admin Panel)
+| Web Routes - K3 STORE PROJECT (Dinamis & Admin Panel Terproteksi)
 |--------------------------------------------------------------------------
 */
 
-// ==========================================
-// RUTE UTAMA / PELANGGAN (CUSTOMER ROUTES)
-// ==========================================
-
-// 1. Laman Utama (Katalog Semua Game)
+// =========================================================================
+// RUTE UTAMA / PELANGGAN (CUSTOMER ROUTES - Bebas Diakses Siapa Saja)
+// =========================================================================
 Route::get('/', [TransaksiController::class, 'index'])->name('home');
-
-// 2. Laman Detail Top Up (Form Input per Game)
 Route::get('/topup/{id}', [TransaksiController::class, 'show'])->name('topup.detail');
-
-// 3. Proses Simpan Data (Action saat klik "Beli Sekarang")
 Route::post('/topup/store', [TransaksiController::class, 'store'])->name('topup.store');
-
-// 4. Halaman Nota Transaksi (Muncul setelah Berhasil Beli)
 Route::get('/nota/{no_trx}', [TransaksiController::class, 'showNota'])->name('topup.nota');
-
-// 5. Fitur Lacak Pesanan (Cek Status)
 Route::get('/cek-transaksi', [TransaksiController::class, 'search'])->name('transaksi.search');
+Route::post('/api/check-game-account', [TransaksiController::class, 'checkAccount'])->name('api.checkAccount');
 
 
-// ==========================================
-// RUTE MANAGEMENT ADMIN (ADMIN PANEL ROUTES)
-// ==========================================
-Route::prefix('admin')->name('admin.')->group(function () {
+// =========================================================================
+// RUTE OTENTIKASI ADMIN (GUEST - Belum Login)
+// =========================================================================
+Route::middleware('guest')->group(function () {
+    Route::get('admin/login', [AuthenticatedSessionController::class, 'create'])->name('login');
+    Route::post('admin/login', [AuthenticatedSessionController::class, 'store']);
+
+    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
+    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
+    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
+    Route::post('reset-password', [NewPasswordController::class, 'store'])->name('password.store');
+});
+
+
+// =========================================================================
+// RUTE MANAGEMENT ADMIN (ADMIN PANEL ROUTES - Wajib Login)
+// =========================================================================
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     
-    // 6. Dashboard Utama Admin & Kelola Pesanan
-    Route::get('/dashboard', [TransaksiController::class, 'adminDashboard'])->name('dashboard');
+    // 1. Beranda / Dashboard Utama Admin (Statistik Ringkas K3STORE)
+    Route::get('/dashboard', [TransaksiController::class, 'dashboardUtama'])->name('dashboard');
+    
+    // 2. Kelola Pesanan / Transaksi Terpisah (Halaman Tabel Lengkap)
+    Route::get('/pesanan', [TransaksiController::class, 'adminDashboard'])->name('pesanan.index');
     Route::post('/update-status/{id}', [TransaksiController::class, 'updateStatus'])->name('updateStatus');
     
-    // TAMBAHAN: RUTE DOWNLOAD SPREADSHEET EXCEL (DENGAN FILTER TANGGAL/BULAN/TAHUN)
+    // RUTE DOWNLOAD SPREADSHEET EXCEL
     Route::get('/transactions/export', [TransaksiController::class, 'exportExcel'])->name('transactions.export');
 
-    // TAMBAHAN: RUTE UNTUK KOSONGKAN / CLEAR SEMUA RIWAYAT TRANSAKSI DAN PELANGGAN
+    // RUTE UNTUK KOSONGKAN SEMUA RIWAYAT TRANSAKSI (MENGGUNAKAN DELETE)
     Route::delete('/transactions/truncate', [TransaksiController::class, 'truncateTransaksi'])->name('transactions.truncate');
 
-    // 7. CRUD Daftar Games (Menambah/Mengedit Game di Web)
-    Route::get('/games', [AdminController::class, 'indexGames'])->name('games.index');
-    
-    // PERBAIKAN: Diarahkan ke TransaksiController sesuai fungsi storeGame otomatis yang kita buat
+    // 3. CRUD Daftar Games
+    Route::get('/games', [TransaksiController::class, 'indexGames'])->name('games.index');
     Route::post('/games/store', [TransaksiController::class, 'storeGame'])->name('games.store');
-    
-    Route::post('/games/update/{id}', [AdminController::class, 'updateGame'])->name('games.update');
-    
-    // PERBAIKAN: Nama URL disesuaikan dengan form action di blade yang memanggil (.destroy)
-    Route::delete('/games/destroy/{id}', [AdminController::class, 'destroyGame'])->name('games.destroy');
+    Route::delete('/games/destroy/{id}', [TransaksiController::class, 'destroyGame'])->name('games.destroy');
 
-    // =========================================================================
-    // 8. CRUD Isi Game (SUDAH DISINKRONKAN DENGAN LAYOUT ADMIN BLADE)
-    // =========================================================================
-    Route::get('/nominal', [AdminController::class, 'indexNominal'])->name('nominal.index');
-    Route::post('/nominal/store', [AdminController::class, 'storeNominal'])->name('nominal.store');
-    Route::post('/nominal/update/{id}', [AdminController::class, 'updateNominal'])->name('nominal.update');
-    Route::delete('/nominal/delete/{id}', [AdminController::class, 'destroyNominal'])->name('nominal.destroy');
+    // 4. CRUD Isi Game / Nominal
+    Route::get('/nominal', [TransaksiController::class, 'indexNominal'])->name('nominal.index');
+    Route::post('/nominal/store', [TransaksiController::class, 'storeNominal'])->name('nominal.store');
+    Route::post('/nominal/update/{id}', [TransaksiController::class, 'updateNominal'])->name('nominal.update');
+    Route::delete('/nominal/delete/{id}', [TransaksiController::class, 'destroyNominal'])->name('nominal.destroy');
 
-    // 9. Pengaturan Kontak Pembayaran (Ubah No. DANA & QRIS)
-    Route::get('/pengaturan', [AdminController::class, 'indexPengaturan'])->name('pengaturan.index');
-    Route::post('/pengaturan/update', [AdminController::class, 'updatePengaturan'])->name('pengaturan.update');
-    
+    // 5. Pengaturan Kontak Pembayaran
+    Route::get('/pengaturan', [TransaksiController::class, 'indexPengaturan'])->name('pengaturan.index');
+    Route::post('/pengaturan/update', [TransaksiController::class, 'updatePengaturan'])->name('pengaturan.update');
+
+    // 6. FITUR TAMBAH ADMIN BARU (Ditempatkan di dalam jangkauan proteksi auth)
+    Route::get('/register', [TransaksiController::class, 'showRegisterForm'])->name('register.form');
+    Route::post('/register', [TransaksiController::class, 'storeAdmin'])->name('register.store');
+
+    // FIX LOGOUT ADMIN
+    Route::post('/logout', function (Request $request) {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect('/admin/login');
+    })->name('logout');
+});
+
+
+// =========================================================================
+// RUTE PROFILE ADMIN (AUTH - Sudah Login)
+// =========================================================================
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });

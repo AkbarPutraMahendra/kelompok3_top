@@ -3,96 +3,99 @@
 namespace App\Exports;
 
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Concerns\FromQuery;
-use Maatwebsite\Excel\Concerns\Exportable;
+use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class TransaksiExport implements FromQuery, WithHeadings, WithMapping
+class TransaksiExport implements FromCollection, WithHeadings, WithMapping
 {
-    use Exportable;
-
-    protected $tanggal;
-    protected $bulan;
-    protected $tahun;
+    protected $tanggalMulai;
+    protected $tanggalSelesai;
+    protected $downloadSemua;
+    protected $search;
 
     // Menangkap parameter filter dari Controller
-    public function __construct($tanggal = null, $bulan = null, $tahun = null)
+    public function __construct($tanggalMulai = null, $tanggalSelesai = null, $downloadSemua = false, $search = null)
     {
-        $this->tanggal = $tanggal;
-        $this->bulan = $bulan;
-        $this->tahun = $tahun;
+        $this->tanggalMulai = $tanggalMulai;
+        $this->tanggalSelesai = $tanggalSelesai;
+        $this->downloadSemua = $downloadSemua;
+        $this->search = $search;
     }
 
     /**
-     * Query data transaksi yang akan diexport berdasarkan filter
+     * AMBIL DATA SEBAGAI COLLECTION
      */
-    public function query()
+    public function collection()
     {
         $query = DB::table('transaksi')
             ->join('customers', 'transaksi.id_customer', '=', 'customers.id_customer')
             ->join('games', 'customers.id_game', '=', 'games.id_game')
             ->select(
-                'transaksi.no_transaksi',
-                'games.nama_game',
-                'customers.id_akun',
-                'customers.email',
-                'transaksi.nominal',
-                'transaksi.metode_pembayaran',
-                'transaksi.tanggal',
-                'transaksi.status'
+                'transaksi.no_transaksi', 
+                'customers.email', 
+                'customers.id_akun', 
+                'games.nama_game', 
+                'transaksi.nominal', 
+                'transaksi.metode_pembayaran', 
+                'transaksi.status', 
+                'transaksi.tanggal'
             )
-            ->orderBy('transaksi.tanggal', 'desc');
+            ->orderBy('transaksi.created_at', 'desc');
 
-        // Filter Spesifik Tanggal (YYYY-MM-DD)
-        if ($this->tanggal) {
-            $query->whereDate('transaksi.tanggal', $this->tanggal);
+        // Aplikasi Filter Keyword Pencarian jika ada
+        if ($this->search) {
+            $query->where(function($q) {
+                $q->where('transaksi.no_transaksi', 'LIKE', "%{$this->search}%")
+                  ->orWhere('customers.id_akun', 'LIKE', "%{$this->search}%")
+                  ->orWhere('customers.email', 'LIKE', "%{$this->search}%");
+            });
         }
 
-        // Filter Bulan (1 - 12)
-        if ($this->bulan) {
-            $query->whereMonth('transaksi.tanggal', $this->bulan);
+        // Angkut Filter Tanggal jika tombol 'Download Semua' tidak dicentang
+        if (!$this->downloadSemua) {
+            if ($this->tanggalMulai && $this->tanggalSelesai) {
+                $query->whereBetween('transaksi.tanggal', [
+                    $this->tanggalMulai . ' 00:00:00',
+                    $this->tanggalSelesai . ' 23:59:59'
+                ]);
+            }
         }
 
-        // Filter Tahun (Contoh: 2026)
-        if ($this->tahun) {
-            $query->whereYear('transaksi.tanggal', $this->tahun);
-        }
-
-        return $query;
+        return $query->get(); 
     }
 
     /**
-     * Membuat Baris Header di Spreadsheet
+     * STRUKTUR HEADERS / JUDUL KOLOM EXCEL
      */
     public function headings(): array
     {
         return [
-            'No. Transaksi',
-            'Nama Game',
-            'ID Akun Game',
+            'No Transaksi',
             'Email Pelanggan',
+            'ID Akun Game',
+            'Nama Game',
             'Nominal / Layanan',
             'Metode Pembayaran',
-            'Tanggal Transaksi',
-            'Status',
+            'Status Transaksi',
+            'Tanggal & Waktu'
         ];
     }
 
     /**
-     * Memetakan data dari database agar rapi di setiap kolom spreadsheet
+     * MAPPING BARIS DATA AGAR SESUAI URUTAN KOLOM
      */
     public function map($transaksi): array
     {
         return [
             $transaksi->no_transaksi,
-            $transaksi->nama_game,
-            "'" . $transaksi->id_akun, // Diberi tanda petik tunggal (') agar ID bertipe angka panjang tidak rusak/berubah di Excel
             $transaksi->email,
+            $transaksi->id_akun,
+            $transaksi->nama_game,
             $transaksi->nominal,
-            $transaksi->metode_pembayaran,
-            date('d-m-Y H:i', strtotime($transaksi->tanggal)),
+            strtoupper($transaksi->metode_pembayaran), // SUDAH FIXED: dari strupper jadi strtoupper
             $transaksi->status,
+            $transaksi->tanggal,
         ];
     }
 }

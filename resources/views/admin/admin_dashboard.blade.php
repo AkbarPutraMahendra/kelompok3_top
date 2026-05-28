@@ -1,146 +1,139 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="max-w-6xl mx-auto">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8">
-        <div>
-            <h2 class="text-2xl font-black uppercase italic tracking-widest text-[#fbbf24]">Kelola Pesanan</h2>
-            <p class="text-xs text-gray-500 mt-1 uppercase tracking-wider">Daftar transaksi masuk sistem K3STORE</p>
-        </div>
-        <div class="flex items-center gap-6 self-end sm:self-auto w-full sm:w-auto justify-between sm:justify-end">
-            <form action="{{ route('admin.transactions.truncate') }}" method="POST" onsubmit="return confirm('PERINGATAN! Tindakan ini akan menghapus SELURUH riwayat transaksi secara permanen dari database. Lanjutkan?')">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="bg-red-600/10 hover:bg-red-600 border border-red-500/20 text-red-500 hover:text-white text-[10px] font-black uppercase tracking-wider py-2.5 px-4 rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-2">
-                    <i class="fa fa-trash-alt text-xs"></i> Clear Riwayat
-                </button>
-            </form>
-
-            <div class="text-right">
-                <p class="text-[10px] text-gray-500 uppercase font-bold">Total Transaksi</p>
-                <p class="text-2xl font-black text-[#fbbf24]">{{ count($transactions) }}</p>
-            </div>
-        </div>
+<div class="min-h-screen text-gray-100 p-1">
+    
+    <div class="mb-8">
+        <h1 class="text-2xl font-black uppercase tracking-wider text-white">
+            Ringkasan <span class="text-[#fbbf24]">Bisnis</span>
+        </h1>
+        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">
+            Metrik performa operasional K3STORE saat ini
+        </p>
     </div>
 
-    <div class="bg-[#1f1f1f] p-6 rounded-[2rem] border border-gray-800 mb-8 shadow-xl">
-        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
-            <i class="fa fa-filter text-[#fbbf24]"></i> Filter & Ekspor Data Transaksi
-        </h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         
-        <form action="{{ route('admin.transactions.export') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <div class="bg-[#1f1f1f] border border-gray-800 p-6 rounded-[2rem] relative overflow-hidden shadow-xl flex items-center justify-between">
             <div>
-                <label class="text-[9px] text-gray-500 uppercase font-black tracking-wider block mb-2">Tanggal Spesifik</label>
-                <input type="date" name="filter_tanggal" class="w-full bg-gray-900 border border-gray-700 p-2.5 rounded-xl text-xs text-white outline-none focus:border-[#fbbf24] transition-all font-semibold cursor-pointer">
+                <p class="text-[10px] font-black uppercase tracking-wider text-gray-500">Total Transaksi</p>
+                <h3 class="text-3xl font-black text-white mt-1">{{ $totalTransaksi }}</h3>
             </div>
+            <div class="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400">
+                <i class="fa fa-shopping-cart text-xl"></i>
+            </div>
+            <div class="absolute -bottom-4 -right-4 w-16 h-16 bg-blue-500/5 rounded-full blur-xl"></div>
+        </div>
 
+        <div class="bg-[#1f1f1f] border border-gray-800 p-6 rounded-[2rem] relative overflow-hidden shadow-xl flex items-center justify-between">
             <div>
-                <label class="text-[9px] text-gray-500 uppercase font-black tracking-wider block mb-2">Pilih Bulan</label>
-                <select name="filter_bulan" class="w-full bg-gray-900 border border-gray-700 p-2.5 rounded-xl text-xs text-white outline-none focus:border-[#fbbf24] transition-all font-semibold cursor-pointer">
-                    <option value="">-- Semua Bulan --</option>
-                    <option value="1">Januari</option>
-                    <option value="2">Februari</option>
-                    <option value="3">Maret</option>
-                    <option value="4">April</option>
-                    <option value="5">Mei</option>
-                    <option value="6">Juni</option>
-                    <option value="7">Juli</option>
-                    <option value="8">Agustus</option>
-                    <option value="9">September</option>
-                    <option value="10">Oktober</option>
-                    <option value="11">November</option>
-                    <option value="12">Desember</option>
-                </select>
+                <p class="text-[10px] font-black uppercase tracking-wider text-gray-500">Transaksi Sukses</p>
+                <h3 class="text-3xl font-black text-green-400 mt-1">{{ $transaksiSukses }}</h3>
             </div>
+            <div class="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center text-green-400">
+                <i class="fa fa-check-circle text-xl"></i>
+            </div>
+            <div class="absolute -bottom-4 -right-4 w-16 h-16 bg-green-500/5 rounded-full blur-xl"></div>
+        </div>
 
+        <div class="bg-[#1f1f1f] border border-gray-800 p-6 rounded-[2rem] relative overflow-hidden shadow-xl flex items-center justify-between">
             <div>
-                <label class="text-[9px] text-gray-500 uppercase font-black tracking-wider block mb-2">Ketik Tahun</label>
-                <input type="number" name="filter_tahun" placeholder="Contoh: 2026" min="2020" max="2030" class="w-full bg-gray-900 border border-gray-700 p-2.5 rounded-xl text-xs text-white outline-none focus:border-[#fbbf24] transition-all font-semibold">
+                <p class="text-[10px] font-black uppercase tracking-wider text-gray-500">Pesanan Pending</p>
+                <h3 class="text-3xl font-black text-yellow-500 mt-1">{{ $transaksiPending }}</h3>
             </div>
+            <div class="w-12 h-12 bg-yellow-500/10 rounded-2xl flex items-center justify-center text-yellow-500">
+                <i class="fa fa-clock text-xl"></i>
+            </div>
+            <div class="absolute -bottom-4 -right-4 w-16 h-16 bg-yellow-500/5 rounded-full blur-xl"></div>
+        </div>
 
+        <div class="bg-[#1f1f1f] border border-gray-800 p-6 rounded-[2rem] relative overflow-hidden shadow-xl flex items-center justify-between">
             <div>
-                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white text-xs font-black py-3 rounded-xl uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2">
-                    <i class="fa fa-file-excel text-sm"></i> Download Excel
-                </button>
+                <p class="text-[10px] font-black uppercase tracking-wider text-gray-500">Katalog Game</p>
+                <h3 class="text-3xl font-black text-white mt-1">{{ $totalGames }}</h3>
             </div>
-        </form>
+            <div class="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-400">
+                <i class="fa fa-gamepad text-xl"></i>
+            </div>
+            <div class="absolute -bottom-4 -right-4 w-16 h-16 bg-purple-500/5 rounded-full blur-xl"></div>
+        </div>
+
     </div>
 
-    <div class="bg-[#1f1f1f] rounded-[2rem] border border-gray-800 overflow-hidden shadow-2xl">
-        <div class="overflow-x-auto">
+    <div class="bg-[#1f1f1f] border border-gray-800 rounded-[2.5rem] shadow-2xl p-6 relative overflow-hidden">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+                <h2 class="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2">
+                    <i class="fa fa-history text-xs text-[#fbbf24]"></i> Aktivitas 5 Transaksi Terbaru
+                </h2>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-0.5">
+                    Memantau pesanan real-time yang baru masuk
+                </p>
+            </div>
+            <div>
+                <a href="{{ route('admin.pesanan.index') }}" class="inline-flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2.5 rounded-xl transition-all shadow-md active:scale-95">
+                    Lihat Semua <i class="fa fa-arrow-right text-[9px] text-[#fbbf24]"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-2xl border border-gray-800 bg-gray-900/50">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-black/40 text-[10px] uppercase tracking-[0.2em] text-gray-500">
-                        <th class="p-6">Informasi Transaksi</th>
-                        <th class="p-6">Detail Pelanggan</th>
-                        <th class="p-6">Item & Harga</th>
-                        <th class="p-6 text-center">Status</th>
-                        <th class="p-6 text-center">Aksi</th>
+                    <tr class="border-b border-gray-800 bg-gray-900/80 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                        <th class="p-4">No Transaksi</th>
+                        <th class="p-4">ID Akun</th>
+                        <th class="p-4">Game</th>
+                        <th class="p-4">Nominal</th>
+                        <th class="p-4 text-center">Status</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-800">
-                    @foreach($transactions as $trx)
-                    <tr class="hover:bg-white/[0.02] transition-colors">
-                        
-                        <td class="p-6">
-                            <p class="text-xs font-black text-white group-hover:text-[#fbbf24] transition-colors">{{ $trx->no_transaksi }}</p>
-                            <p class="text-[10px] text-gray-500 font-mono mt-1 italic">{{ $trx->tanggal }}</p>
+                <tbody class="text-xs font-semibold text-gray-300 divide-y divide-gray-800/50">
+                    @forelse($recentTransactions as $rt)
+                    <tr class="hover:bg-gray-800/30 transition-colors">
+                        <td class="p-4 font-mono text-white text-[11px] tracking-wide font-bold">
+                            {{ $rt->no_transaksi }}
                         </td>
-
-                        <td class="p-6">
-                            <div class="flex flex-col gap-1">
-                                <div class="flex items-center gap-2">
-                                    <i class="fa fa-user text-[10px] text-gray-600"></i>
-                                    <span class="text-xs font-bold text-gray-300">{{ $trx->id_akun }}</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <i class="fa fa-envelope text-[10px] text-gray-600"></i>
-                                    <span class="text-[10px] text-[#fbbf24] lowercase font-medium">{{ $trx->email }}</span>
-                                </div>
-                            </div>
-                        </td>
-
-                        <td class="p-6">
-                            <p class="text-[10px] font-black text-white uppercase italic tracking-wider">{{ $trx->nama_game }}</p>
-                            <p class="text-xs font-black text-[#fbbf24] mt-0.5">{{ $trx->nominal }}</p>
-                            <p class="text-[9px] text-gray-600 uppercase font-bold mt-1 tracking-tighter">{{ $trx->metode_pembayaran }}</p>
-                        </td>
-
-                        <td class="p-6 text-center">
-                            <span class="inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest
-                                {{ $trx->status == 'Success' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 
-                                   ($trx->status == 'Failed' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 
-                                   'bg-yellow-500/10 text-[#fbbf24] border border-yellow-500/20') }}">
-                                {{ $trx->status }}
+                        <td class="p-4">
+                            <span class="bg-gray-800/60 text-gray-300 px-2.5 py-1 rounded-md border border-gray-700 text-[11px]">
+                                {{ $rt->id_akun }}
                             </span>
                         </td>
-
-                        <td class="p-6">
-                            <form action="{{ route('admin.updateStatus', $trx->id_transaksi) }}" method="POST" class="flex items-center justify-center gap-2">
-                                @csrf
-                                <select name="status" class="bg-gray-900 border border-gray-700 text-[10px] font-black uppercase rounded-lg px-2 py-2 outline-none focus:border-[#fbbf24] transition-all cursor-pointer">
-                                    <option value="Pending" {{ $trx->status == 'Pending' ? 'selected' : '' }}>Pending</option>
-                                    <option value="Success" {{ $trx->status == 'Success' ? 'selected' : '' }}>Success</option>
-                                    <option value="Failed" {{ $trx->status == 'Failed' ? 'selected' : '' }}>Failed</option>
-                                </select>
-                                <button type="submit" class="bg-[#fbbf24] hover:bg-yellow-500 text-black w-8 h-8 rounded-lg flex items-center justify-center transition-all shadow-lg active:scale-95">
-                                    <i class="fa fa-save text-xs"></i>
-                                </button>
-                            </form>
+                        <td class="p-4 font-bold text-gray-200">
+                            {{ $rt->nama_game }}
                         </td>
-
+                        <td class="p-4 text-[#fbbf24] font-bold">
+                            {{ $rt->nominal }}
+                        </td>
+                        <td class="p-4 text-center">
+                            @if($rt->status == 'Success')
+                                <span class="inline-block bg-green-500/10 border border-green-500/30 text-green-400 text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
+                                    Success
+                                </span>
+                            @elseif($rt->status == 'Pending')
+                                <span class="inline-block bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full animate-pulse">
+                                    Pending
+                                </span>
+                            @else
+                                <span class="inline-block bg-red-500/10 border border-red-500/30 text-red-400 text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
+                                    Failed
+                                </span>
+                            @endif
+                        </td>
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                        <td colspan="5" class="p-10 text-center text-gray-500 font-bold uppercase tracking-widest text-[10px]">
+                            <i class="fa fa-folder-open text-2xl block mb-2 text-gray-700"></i>
+                            Belum ada riwayat transaksi saat ini
+                        </td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
-        
-        @if(count($transactions) == 0)
-        <div class="p-20 text-center">
-            <i class="fa fa-inbox text-4xl text-gray-800 mb-4"></i>
-            <p class="text-xs text-gray-600 font-bold uppercase tracking-[0.3em]">Belum ada transaksi masuk</p>
-        </div>
-        @endif
+
     </div>
 </div>
 @endsection

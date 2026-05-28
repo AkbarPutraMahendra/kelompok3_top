@@ -16,24 +16,47 @@
             </div>
             <h1 class="text-xl font-black italic uppercase tracking-tighter">K3<span class="text-[#fbbf24]">ADMIN</span></h1>
         </div>
+        
         <nav class="flex-1 p-4 space-y-2">
             <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all {{ request()->routeIs('admin.dashboard') ? 'bg-[#fbbf24] text-black' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}">
+                <i class="fa fa-chart-pie text-sm"></i> Dashboard Utama
+            </a>
+
+            <a href="{{ route('admin.pesanan.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all {{ request()->routeIs('admin.pesanan.*') ? 'bg-[#fbbf24] text-black' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}">
                 <i class="fa fa-shopping-cart text-sm"></i> Kelola Pesanan
             </a>
+
             <a href="{{ route('admin.games.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all {{ request()->routeIs('admin.games.*') ? 'bg-[#fbbf24] text-black' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}">
                 <i class="fa fa-gamepad text-sm"></i> Daftar Games
             </a>
+
             <a href="{{ route('admin.nominal.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all {{ request()->routeIs('admin.nominal.*') ? 'bg-[#fbbf24] text-black' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}">
                 <i class="fa fa-tags text-sm"></i> Isi Game & Stok
             </a>
+
             <a href="{{ route('admin.pengaturan.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all {{ request()->routeIs('admin.pengaturan.*') ? 'bg-[#fbbf24] text-black' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}">
                 <i class="fa fa-wrench text-sm"></i> Kontak Pembayaran
             </a>
+
+            <a href="{{ route('admin.register.form') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all {{ request()->routeIs('admin.register.form') ? 'bg-[#fbbf24] text-black' : 'text-gray-400 hover:bg-white/5 hover:text-white' }}">
+                <i class="fa fa-user-plus text-sm"></i> Tambah Akun Admin
+            </a>
         </nav>
-        <div class="p-4 border-t border-gray-800">
+
+        <div class="p-4 border-t border-gray-800 space-y-2">
             <a href="{{ route('home') }}" target="_blank" class="flex items-center justify-center gap-2 w-full bg-white/5 hover:bg-white/10 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
                 <i class="fa fa-external-link-alt"></i> Lihat Toko
             </a>
+
+            <a href="#" 
+               onclick="event.preventDefault(); document.getElementById('logout-form').submit();" 
+               class="flex items-center justify-center gap-2 w-full bg-red-500/10 hover:bg-red-600 text-red-400 hover:text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                <i class="fa fa-sign-out-alt"></i> Keluar Sistem
+            </a>
+
+            <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" class="hidden">
+                @csrf
+            </form>
         </div>
     </aside>
 

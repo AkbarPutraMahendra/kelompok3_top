@@ -116,6 +116,27 @@
 @endif
     </section>
 
+    @if(isset($config) && !empty($config->no_dana))
+        @php
+            // Membersihkan karakter spasi, strip atau tanda tambah (+) dari database
+            $nomorClean = str_replace([' ', '-', '+'], '', $config->no_dana);
+            
+            // Mengubah awalan angka 0 menjadi format internasional 62
+            if (str_starts_with($nomorClean, '0')) {
+                $nomorClean = '62' . substr($nomorClean, 1);
+            }
+        @endphp
+
+        <a href="https://api.whatsapp.com/send?phone={{ $nomorClean }}&text=Halo%20CS%20K3%20STORE,%20saya%20butuh%20bantuan%20terkait%20topup." 
+           target="_blank" 
+           class="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#25D366] hover:bg-[#20ba56] text-white font-bold text-xs uppercase tracking-wider px-5 py-3.5 rounded-full shadow-lg shadow-green-500/20 hover:scale-105 active:scale-95 transition-all group">
+            
+            <i class="fab fa-whatsapp text-lg animate-bounce group-hover:animate-none"></i>
+            
+            <span>Customer Service</span>
+        </a>
+    @endif
+
     <footer class="bg-dark-secondary py-12 border-t border-gray-800">
         <div class="container mx-auto px-4 text-center">
             <p class="text-gray-600 text-[10px] font-bold tracking-[0.3em] uppercase">

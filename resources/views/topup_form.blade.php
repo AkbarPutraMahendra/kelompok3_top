@@ -44,7 +44,7 @@
                          onerror="this.onerror=null; this.src='{{ asset('images/default.png') }}';" 
                          alt="{{ $game->nama_game }}" 
                          class="w-32 h-32 mx-auto rounded-3xl object-cover shadow-xl mb-4 border-2 border-gray-800">
-                    <h2 class="text-xl font-black uppercase tracking-wider mb-2">{{ $game->nama_game }}</h2>
+                    <h2 class="text-xl font-black uppercase tracking-wider mb-2" id="current-game-name">{{ $game->nama_game }}</h2>
                     <p class="text-xs text-gray-400 leading-relaxed">Top up aman, murah, dan instan hanya di K3 STORE. Pilihan pembayaran lengkap termasuk DANA dan QRIS Otomatis.</p>
                 </div>
             </div>
@@ -59,14 +59,37 @@
                             <div class="w-6 h-6 rounded-full bg-gold text-black flex items-center justify-center font-black text-xs">1</div>
                             <h3 class="font-black uppercase tracking-wider text-sm">Lengkapi Data Akun</h3>
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        
+                        <div class="space-y-4">
+                            @if(Str::contains(Str::lower($game->nama_game), ['mobile legend', 'mlbb', 'mobile legends']))
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">User ID</label>
+                                    <input type="text" id="user_id" name="user_id" required placeholder="Contoh: 136407462" class="w-full bg-dark-primary border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold transition-colors text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Zone ID / Server</label>
+                                    <input type="text" id="zone_id" name="zone_id" required placeholder="Contoh: 15595" class="w-full bg-dark-primary border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold transition-colors text-white">
+                                </div>
+                            </div>
+                            @else
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">ID Akun / User ID</label>
-                                <input type="text" name="id_akun" required placeholder="Masukkan ID Akun" class="w-full bg-dark-primary border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold transition-colors text-white">
+                                <input type="text" id="user_id" name="user_id" required placeholder="Masukkan ID Player" class="w-full bg-dark-primary border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold transition-colors text-white">
+                                <input type="hidden" id="zone_id" name="zone_id" value="-">
                             </div>
+                            @endif
+
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Email (Untuk Nota)</label>
                                 <input type="email" name="email" required placeholder="alamat@email.com" class="w-full bg-dark-primary border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold transition-colors text-white">
+                            </div>
+                        </div>
+
+                        <div id="username-container" class="mt-4 hidden">
+                            <div class="bg-green-500/10 border border-green-500/20 text-green-400 text-xs p-3.5 rounded-xl flex items-center gap-2">
+                                <i class="fa fa-check-circle text-sm"></i>
+                                <span>Nama Akun: <strong id="account-username" class="text-white uppercase font-black tracking-wide">...</strong></span>
                             </div>
                         </div>
                     </div>
@@ -129,5 +152,68 @@
         &copy; 2026 KELOMPOK 3 ADVERTISING PROJECT
     </footer>
 
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const gameName = document.getElementById('current-game-name').innerText.toLowerCase();
+        const userIdInput = document.getElementById('user_id');
+        const zoneIdInput = document.getElementById('zone_id');
+        const usernameContainer = document.getElementById('username-container');
+        const accountUsername = document.getElementById('account-username');
+
+        // Fitur validasi username otomatis berjalan hanya jika membuka katalog Mobile Legends
+        const isMobileLegend = gameName.includes('mobile legend') || gameName.includes('mlbb');
+
+        function periksaAkun() {
+            if (!isMobileLegend) return; // Abaikan jika game lain
+
+            const userId = userIdInput.value.trim();
+            const zoneId = zoneIdInput.value.trim();
+
+            // Mulai pengecekan jika panjang karakter input rasional (MLBB minimal ID 6 digit & Zone 4 digit)
+            if (userId.length >= 5 && zoneId.length >= 4) {
+                usernameContainer.classList.remove('hidden');
+                accountUsername.innerText = 'Memeriksa Akun...';
+                accountUsername.className = "text-yellow-400 font-bold animate-pulse";
+
+                // Menembak internal route controller Laravel via POST Request
+                fetch("{{ route('api.checkAccount') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    },
+                    body: JSON.stringify({ 
+                        user_id: userId, 
+                        zone_id: zoneId 
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Jika berhasil divalidasi oleh sistem Apigames
+                        accountUsername.innerText = data.username;
+                        accountUsername.className = "text-white font-black uppercase tracking-wide";
+                    } else {
+                        // Jika ID tidak valid atau data null
+                        accountUsername.innerText = "Akun tidak ditemukan / salah server";
+                        accountUsername.className = "text-red-500 font-bold";
+                    }
+                })
+                .catch(error => {
+                    accountUsername.innerText = "Gagal memvalidasi akun";
+                    accountUsername.className = "text-red-500 font-bold";
+                });
+            } else {
+                usernameContainer.classList.add('hidden');
+            }
+        }
+
+        // Jalankan trigger pengecekan setiap pengguna melepaskan ketikan tombol
+        if (userIdInput && zoneIdInput) {
+            userIdInput.addEventListener('keyup', periksaAkun);
+            zoneIdInput.addEventListener('keyup', periksaAkun);
+        }
+    });
+    </script>
 </body>
 </html>
