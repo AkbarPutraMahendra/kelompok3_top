@@ -7,7 +7,6 @@ use App\Models\Game;
 use App\Models\Customer;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http; 
 use App\Exports\TransaksiExport;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -20,7 +19,7 @@ class TransaksiController extends Controller
      */
 
     /**
-     * 1. LAMAN UTAMA (KATALOG GAME) - UPDATED FOR CUSTOMER SERVICE
+     * 1. LAMAN UTAMA (KATALOG GAME)
      */
     public function index()
     {
@@ -67,7 +66,7 @@ class TransaksiController extends Controller
         $request->validate([
             'email'             => 'required|email',
             'user_id'           => 'required',
-            'zone_id'           => 'required',
+            'zone_id'           => 'nullable', // Diubah ke nullable agar mendukung game tanpa server (FF / Roblox)
             'id_game'           => 'required|exists:games,id_game',
             'nominal'           => 'required',
             'metode_pembayaran' => 'required',
@@ -76,7 +75,12 @@ class TransaksiController extends Controller
         try {
             DB::beginTransaction();
 
-            $formatIdAkun = $request->user_id . ' (' . $request->zone_id . ')';
+            // Kondisional format ID akun jika zone_id diisi ataupun kosong
+            if ($request->filled('zone_id')) {
+                $formatIdAkun = $request->user_id . ' (' . $request->zone_id . ')';
+            } else {
+                $formatIdAkun = $request->user_id;
+            }
 
             $customer = Customer::create([
                 'email'   => $request->email,
@@ -164,57 +168,6 @@ class TransaksiController extends Controller
         }
 
         return view('cek-transaksi', compact('results'));
-    }
-
-    /**
-     * 6. VALIDASI & CEK USERNAME VIA API GATEWAY
-     */
-    public function checkAccount(Request $request)
-    {
-        $userId = $request->input('user_id');
-        $zoneId = $request->input('zone_id');
-
-        if (!$userId || !$zoneId) {
-            return response()->json(['success' => false, 'message' => 'ID dan Server tidak boleh kosong']);
-        }
-
-        try {
-            $merchantId = 'M260524RCIN5973GE'; 
-            $secretKey  = '7aea18ab0526fad2f8267f67d6b79c884f8416a2e8e4c4ae8ccd404ed4999071';
-
-            $signature = md5($merchantId . $secretKey);
-            $url = "https://v2.apigames.id/merchant/cek-username";
-            
-            $response = Http::get($url, [
-                'merchant'  => $merchantId,
-                'signature' => $signature,
-                'game'      => 'mobilelegends',
-                'user_id'   => $userId,
-                'zone_id'   => $zoneId
-            ]);
-
-            if ($response->successful()) {
-                $resData = $response->json();
-
-                if (isset($resData['status']) && $resData['status'] == 1 && !empty($resData['data']['username'])) {
-                    return response()->json([
-                        'success'  => true,
-                        'username' => $resData['data']['username']
-                    ]);
-                }
-                
-                $msgError = $resData['error_msg'] ?? ($resData['message'] ?? 'Gagal memproses validasi akun.');
-                return response()->json([
-                    'success' => false, 
-                    'message' => $msgError
-                ]);
-            }
-
-            return response()->json(['success' => false, 'message' => 'Gagal terhubung ke API Gateway Apigames.']);
-
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'System Error: ' . $e->getMessage()]);
-        }
     }
 
 
@@ -319,8 +272,6 @@ class TransaksiController extends Controller
         try {
             DB::beginTransaction();
 
-            $namaGambarBaru = '';
-
             $idBaru = DB::table('games')->insertGetId([
                 'nama_game'  => $request->nama_game,
                 'gambar'     => '',
@@ -342,6 +293,55 @@ class TransaksiController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             return back()->with('error', 'Gagal menambah game: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * FITUR UPDATE/EDIT DATA GAME
+     */
+    public function updateGame(Request $request, $id)
+    {
+        $request->validate([
+            'nama_game' => 'required|string|max:255|unique:games,nama_game,' . $id . ',id_game',
+            'gambar'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ], [
+            'nama_game.unique' => 'Nama game tersebut sudah digunakan oleh katalog lain!',
+            'gambar.max'        => 'Ukuran logo game maksimal adalah 2MB.'
+        ]);
+
+        try {
+            $game = DB::table('games')->where('id_game', $id)->first();
+
+            if (!$game) {
+                return back()->with('error', 'Data game tidak ditemukan!');
+            }
+
+            $namaGambar = $game->id_game . '.png';
+
+            if ($request->hasFile('gambar')) {
+                $file = $request->file('gambar');
+                $destinationPath = public_path('images');
+
+                if (!empty($game->gambar) && file_exists($destinationPath . '/' . $game->gambar)) {
+                    @unlink($destinationPath . '/' . $game->gambar);
+                }
+
+                $file->move($destinationPath, $namaGambar);
+                
+                DB::table('games')->where('id_game', $id)->update(['gambar' => $namaGambar]);
+            }
+
+            DB::table('games')
+                ->where('id_game', $id)
+                ->update([
+                    'nama_game'  => $request->nama_game,
+                    'updated_at' => now(),
+                ]);
+
+            return back()->with('success', 'Data game berhasil diperbarui!');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui data game: ' . $e->getMessage());
         }
     }
 
@@ -398,7 +398,7 @@ class TransaksiController extends Controller
     }
 
     /**
-     * DOWNLOAD DATA LAPORAN EXCEL (MENDUKUNG FILTER DAN DOWNLOAD SEMUA)
+     * DOWNLOAD DATA LAPORAN EXCEL
      */
     public function exportExcel(Request $request)
     {
@@ -422,7 +422,7 @@ class TransaksiController extends Controller
     }
 
     /**
-     * KOSONGKAN TOTAL SEMUA RIWAYAT TRANSAKSI (TRUNCATE)
+     * KOSONGKAN TOTAL SEMUA RIWAYAT TRANSAKSI (TRUNCATE) - FIXED ERROR
      */
     public function truncateTransaksi()
     {
@@ -540,12 +540,6 @@ class TransaksiController extends Controller
         $config = DB::table('pengaturan')->first();
         return view('admin.pengaturan', compact('config'));
     }
-
-    /**
-     * -------------------------------------------------------------------------
-     * SELESAI SINKRONISASI BARU: FITUR PEMBUATAN AKUN ADMIN
-     * -------------------------------------------------------------------------
-     */
 
     /**
      * Menampilkan halaman form pendaftaran admin baru

@@ -61,8 +61,9 @@
                         </div>
                         
                         <div class="space-y-4">
-                            @if(Str::contains(Str::lower($game->nama_game), ['mobile legend', 'mlbb', 'mobile legends']))
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {{-- PERBAIKAN UTAMA PHP: Sekarang memeriksa isi database tipe_form, bukan nama teks game lagi --}}
+                            @if(($game->tipe_form ?? 'single') === 'double')
+                            <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">User ID</label>
                                     <input type="text" id="user_id" name="user_id" required placeholder="Contoh: 136407462" class="w-full bg-dark-primary border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold transition-colors text-white">
@@ -76,7 +77,7 @@
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">ID Akun / User ID</label>
                                 <input type="text" id="user_id" name="user_id" required placeholder="Masukkan ID Player" class="w-full bg-dark-primary border border-gray-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold transition-colors text-white">
-                                <input type="hidden" id="zone_id" name="zone_id" value="-">
+                                <input type="hidden" id="zone_id" name="zone_id" value="">
                             </div>
                             @endif
 
@@ -154,29 +155,28 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const gameName = document.getElementById('current-game-name').innerText.toLowerCase();
+        // PERBAIKAN UTAMA JAVASCRIPT: Membaca status tipe form langsung dari data backend PHP
+        const tipeForm = "{{ $game->tipe_form ?? 'single' }}";
         const userIdInput = document.getElementById('user_id');
         const zoneIdInput = document.getElementById('zone_id');
         const usernameContainer = document.getElementById('username-container');
         const accountUsername = document.getElementById('account-username');
 
-        // Fitur validasi username otomatis berjalan hanya jika membuka katalog Mobile Legends
-        const isMobileLegend = gameName.includes('mobile legend') || gameName.includes('mlbb');
+        // Fitur validasi akun otomatis berjalan HANYA JIKA tipe form di database diset sebagai 'double'
+        const isDoubleInput = (tipeForm === 'double');
 
         function periksaAkun() {
-            if (!isMobileLegend) return; // Abaikan jika game lain
+            if (!isDoubleInput) return; 
 
             const userId = userIdInput.value.trim();
             const zoneId = zoneIdInput.value.trim();
 
-            // Mulai pengecekan jika panjang karakter input rasional (MLBB minimal ID 6 digit & Zone 4 digit)
             if (userId.length >= 5 && zoneId.length >= 4) {
                 usernameContainer.classList.remove('hidden');
                 accountUsername.innerText = 'Memeriksa Akun...';
                 accountUsername.className = "text-yellow-400 font-bold animate-pulse";
 
-                // Menembak internal route controller Laravel via POST Request
-                fetch("{{ route('api.checkAccount') }}", {
+                fetch("/api/check-game-account", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -187,20 +187,23 @@
                         zone_id: zoneId 
                     })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Rute tidak ditemukan atau masalah internal server');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
-                        // Jika berhasil divalidasi oleh sistem Apigames
                         accountUsername.innerText = data.username;
                         accountUsername.className = "text-white font-black uppercase tracking-wide";
                     } else {
-                        // Jika ID tidak valid atau data null
                         accountUsername.innerText = "Akun tidak ditemukan / salah server";
                         accountUsername.className = "text-red-500 font-bold";
                     }
                 })
                 .catch(error => {
-                    accountUsername.innerText = "Gagal memvalidasi akun";
+                    accountUsername.innerText = "Fitur cek akun sedang dinonaktifkan";
                     accountUsername.className = "text-red-500 font-bold";
                 });
             } else {
@@ -208,7 +211,6 @@
             }
         }
 
-        // Jalankan trigger pengecekan setiap pengguna melepaskan ketikan tombol
         if (userIdInput && zoneIdInput) {
             userIdInput.addEventListener('keyup', periksaAkun);
             zoneIdInput.addEventListener('keyup', periksaAkun);

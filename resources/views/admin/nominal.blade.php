@@ -96,6 +96,12 @@
                             </td>
                             <td class="p-4 text-center">
                                 <div class="flex justify-center gap-1.5">
+                                    <button type="button" 
+                                            onclick="openEditNominalModal('{{ $nominal->id_nominal }}', '{{ $nominal->id_game }}', '{{ $nominal->layanan }}', '{{ $nominal->harga }}')" 
+                                            class="p-2 rounded-lg bg-gray-800/50 border border-gray-700/50 hover:border-blue-500 hover:text-blue-400 transition-all text-gray-400 text-xs" title="Edit">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+
                                     <form action="{{ route('admin.nominal.destroy', $nominal->id_nominal) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus nominal ini?')">
                                         @csrf
                                         @method('DELETE')
@@ -112,7 +118,7 @@
                                 Belum ada varian nominal untuk game ini. Silakan tambahkan lewat form di kiri.
                             </td>
                         </tr>
-                        @endforelse
+                        @endempty
                     </tbody>
                 </table>
             </div>
@@ -121,4 +127,68 @@
     @endif
 
 </div>
+
+<div id="editNominalModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-dark-secondary border border-gray-800 rounded-3xl max-w-md w-full overflow-hidden shadow-2xl p-6">
+        
+        <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-800">
+            <h3 class="text-xs font-black uppercase tracking-widest text-gold flex items-center gap-2">
+                <i class="fa fa-edit"></i> Edit Varian Nominal
+            </h3>
+            <button type="button" onclick="closeEditNominalModal()" class="text-gray-500 hover:text-white transition-colors">
+                <i class="fa fa-times text-sm"></i>
+            </button>
+        </div>
+        
+        <form id="editNominalForm" action="" method="POST" class="space-y-4">
+            @csrf
+            @method('PUT') 
+            
+            <input type="hidden" id="edit_id_game" name="id_game">
+
+            <div>
+                <label class="block text-[10px] font-black uppercase tracking-wider text-gray-400 mb-2">Nama Layanan / Varian Item</label>
+                <input type="text" id="edit_layanan" name="layanan" required 
+                       class="w-full bg-black border border-gray-800 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-gold transition-colors text-white">
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-black uppercase tracking-wider text-gray-400 mb-2">Harga Jual (Angka Saja)</label>
+                <input type="number" id="edit_harga" name="harga" required 
+                       class="w-full bg-black border border-gray-800 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-gold transition-colors text-white">
+            </div>
+
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeEditNominalModal()" 
+                        class="w-1/2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-black py-3.5 rounded-xl uppercase tracking-widest transition-all">
+                    Batal
+                </button>
+                <button type="submit" 
+                        class="w-1/2 bg-gold hover:bg-yellow-500 text-black text-xs font-black py-3.5 rounded-xl uppercase tracking-widest transition-all shadow-lg">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openEditNominalModal(idNominal, idGame, layanan, harga) {
+        const modal = document.getElementById('editNominalModal');
+        const form = document.getElementById('editNominalForm');
+        
+        document.getElementById('edit_id_game').value = idGame;
+        document.getElementById('edit_layanan').value = layanan;
+        document.getElementById('edit_harga').value = harga;
+        
+        // Menyesuaikan action form menuju rute nominal update dengan idNominal yang tepat
+        form.action = `/admin/nominal/update/${idNominal}`;
+        
+        modal.classList.remove('hidden');
+    }
+
+    function closeEditNominalModal() {
+        document.getElementById('editNominalModal').classList.add('hidden');
+    }
+</script>
 @endsection

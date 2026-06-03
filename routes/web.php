@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TransaksiController;
+use App\Http\Controllers\AdminController; 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -23,7 +24,6 @@ Route::get('/topup/{id}', [TransaksiController::class, 'show'])->name('topup.det
 Route::post('/topup/store', [TransaksiController::class, 'store'])->name('topup.store');
 Route::get('/nota/{no_trx}', [TransaksiController::class, 'showNota'])->name('topup.nota');
 Route::get('/cek-transaksi', [TransaksiController::class, 'search'])->name('transaksi.search');
-Route::post('/api/check-game-account', [TransaksiController::class, 'checkAccount'])->name('api.checkAccount');
 
 
 // =========================================================================
@@ -58,22 +58,23 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // RUTE UNTUK KOSONGKAN SEMUA RIWAYAT TRANSAKSI (MENGGUNAKAN DELETE)
     Route::delete('/transactions/truncate', [TransaksiController::class, 'truncateTransaksi'])->name('transactions.truncate');
 
-    // 3. CRUD Daftar Games
-    Route::get('/games', [TransaksiController::class, 'indexGames'])->name('games.index');
-    Route::post('/games/store', [TransaksiController::class, 'storeGame'])->name('games.store');
-    Route::delete('/games/destroy/{id}', [TransaksiController::class, 'destroyGame'])->name('games.destroy');
+    // 3. CRUD Daftar Games + FITUR EDIT (DIALIKHAN KE AdminController)
+    Route::get('/games', [AdminController::class, 'indexGames'])->name('games.index');
+    Route::post('/games/store', [AdminController::class, 'storeGame'])->name('games.store');
+    Route::put('/games/{id_game}', [AdminController::class, 'updateGame'])->name('games.update'); 
+    Route::delete('/games/destroy/{id_game}', [AdminController::class, 'destroyGame'])->name('games.destroy');
 
-    // 4. CRUD Isi Game / Nominal
-    Route::get('/nominal', [TransaksiController::class, 'indexNominal'])->name('nominal.index');
-    Route::post('/nominal/store', [TransaksiController::class, 'storeNominal'])->name('nominal.store');
-    Route::post('/nominal/update/{id}', [TransaksiController::class, 'updateNominal'])->name('nominal.update');
-    Route::delete('/nominal/delete/{id}', [TransaksiController::class, 'destroyNominal'])->name('nominal.destroy');
+    // 4. CRUD Isi Game / Nominal (DIALIKHAN KE AdminController - SINKRON MODAL & VIEW)
+    Route::get('/nominal', [AdminController::class, 'indexNominal'])->name('nominal.index');
+    Route::post('/nominal/store', [AdminController::class, 'storeNominal'])->name('nominal.store');
+    Route::put('/nominal/update/{id}', [AdminController::class, 'updateNominal'])->name('nominal.update'); 
+    Route::delete('/nominal/delete/{id}', [AdminController::class, 'destroyNominal'])->name('nominal.destroy');
 
-    // 5. Pengaturan Kontak Pembayaran
-    Route::get('/pengaturan', [TransaksiController::class, 'indexPengaturan'])->name('pengaturan.index');
-    Route::post('/pengaturan/update', [TransaksiController::class, 'updatePengaturan'])->name('pengaturan.update');
+    // 5. Pengaturan Kontak Pembayaran (DIALIKHAN KE AdminController)
+    Route::get('/pengaturan', [AdminController::class, 'indexPengaturan'])->name('pengaturan.index');
+    Route::post('/pengaturan/update', [AdminController::class, 'updatePengaturan'])->name('pengaturan.update');
 
-    // 6. FITUR TAMBAH ADMIN BARU (Ditempatkan di dalam jangkauan proteksi auth)
+    // 6. FITUR TAMBAH ADMIN BARU (Tetap di TransaksiController)
     Route::get('/register', [TransaksiController::class, 'showRegisterForm'])->name('register.form');
     Route::post('/register', [TransaksiController::class, 'storeAdmin'])->name('register.store');
 

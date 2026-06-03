@@ -20,6 +20,66 @@ class AdminController extends Controller
         return view('admin.games', compact('games'));
     }
 
+    /**
+     * Memproses penyimpanan data game baru dari admin
+     */
+    public function storeGame(Request $request)
+    {
+        $request->validate([
+            'nama_game' => 'required|string|max:255',
+            'tipe_form' => 'required|string|in:single,double', // Memastikan pilihan sesuai opsi
+        ]);
+
+        // Proses insert data menggunakan Query Builder
+        DB::table('games')->insert([
+            'nama_game' => $request->nama_game,
+            'tipe_form' => $request->tipe_form, // Menyimpan tipe form (single/double)
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return back()->with('success', 'Game baru berhasil ditambahkan!');
+    }
+
+    /**
+     * Memproses perubahan/update data game dari admin beserta gambarnya
+     */
+    public function updateGame(Request $request, $id_game)
+    {
+        $request->validate([
+            'nama_game'   => 'required|string|max:255',
+            'tipe_form'   => 'required|string|in:single,double',
+            'gambar_game' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048', // Validasi gambar (opsional saat edit)
+        ]);
+
+        // 1. Proses update data teks berdasarkan id_game
+        DB::table('games')->where('id_game', $id_game)->update([
+            'nama_game' => $request->nama_game,
+            'tipe_form' => $request->tipe_form, // Memperbarui tipe form pilihan admin
+            'updated_at' => now(),
+        ]);
+
+        // 2. Cek apakah admin mengunggah file gambar baru
+        if ($request->hasFile('gambar_game')) {
+            // Menggunakan format penamaan default id_game Anda (Contoh: 1.png)
+            $imageName = $id_game . '.' . $request->gambar_game->getClientOriginalExtension();
+            
+            // Pindahkan file gambar ke folder public/images
+            $request->gambar_game->move(public_path('images'), $imageName);
+        }
+
+        return back()->with('success', 'Data game dan logo berhasil diperbarui!');
+    }
+
+    /**
+     * Menghapus game beserta relasinya (Opsional)
+     */
+    public function destroyGame($id_game)
+    {
+        DB::table('games')->where('id_game', $id_game)->delete();
+        return back()->with('success', 'Game berhasil dihapus!');
+    }
+
 
     // ==========================================
     // 2. MANAGEMENT NOMINAL / VARIAN PRODUK (KONSEP BARU)
@@ -71,6 +131,38 @@ class AdminController extends Controller
         ]);
 
         return back()->with('success', 'Nominal baru berhasil ditambahkan ke game ini!');
+    }
+
+    /**
+     * Memproses pembaruan/update data nominal game
+     */
+    public function updateNominal(Request $request, $id)
+    {
+        $request->validate([
+            'id_game' => 'required|exists:games,id_game',
+            'layanan' => 'required|string|max:255',
+            'harga'   => 'required|numeric|min:0',
+        ]);
+
+        // FIX: Menggunakan 'id_nominal' sesuai struktur primary key tabel nominal_games Anda
+        DB::table('nominal_games')->where('id_nominal', $id)->update([
+            'id_game'    => $request->id_game,
+            'layanan'    => $request->layanan,
+            'harga'      => $request->harga,
+            'updated_at' => now(),
+        ]);
+
+        return back()->with('success', 'Varian nominal berhasil diperbarui!');
+    }
+
+    /**
+     * Menghapus data nominal game
+     */
+    public function destroyNominal($id)
+    {
+        // FIX: Menggunakan 'id_nominal' sesuai struktur primary key tabel nominal_games Anda
+        DB::table('nominal_games')->where('id_nominal', $id)->delete();
+        return back()->with('success', 'Varian nominal berhasil dihapus!');
     }
 
 
